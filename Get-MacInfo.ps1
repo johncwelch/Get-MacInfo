@@ -175,6 +175,12 @@ $macInfoNICList = $macInfoNICList[1..($macInfoNICList.length - 1)]
 ##now, mung the array into a single string with a comma-space separating each entry
 $macInfoNICList = $macInfoNICList -join ', ';
 
+#get current user name
+$macInfoShortUserName = Invoke-Expression -Command '/usr/bin/osascript -e "get short user name of (system info)"'
+
+#get current user UID
+$macInfoUID = Invoke-Expression -Command '/usr/bin/osascript -e "get user ID of (system info)"'
+
 
 #into the hashtable with you!
 $macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
@@ -207,6 +213,9 @@ $macInfoHash.Add("UTCOffset", $macInfoUTCOffset)
 $macInfoHash.Add("DNSHostName", $macInfoDNSHostName)
 $macInfoHash.Add("LocalHostName", $macInfoLocalHostName)
 $macInfoHash.Add("NetworkServiceList", $macInfoNICList)
+
+$macInfoHash.Add("CurrentUserName", $macInfoShortUserName)
+$macInfoHash.Add("CurrentUserUID", $macInfoUID)
 
 
 $macInfoHash
