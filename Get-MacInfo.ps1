@@ -175,6 +175,7 @@ $macInfoNICList = $macInfoNICList[1..($macInfoNICList.length - 1)]
 ##now, mung the array into a single string with a comma-space separating each entry
 $macInfoNICList = $macInfoNICList -join ', ';
 
+#using powershell -> bash -> applescript
 #get current user name
 $macInfoShortUserName = Invoke-Expression -Command '/usr/bin/osascript -e "get short user name of (system info)"'
 
