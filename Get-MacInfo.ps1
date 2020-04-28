@@ -133,10 +133,47 @@ $macInfoRAMSize = $macInfoRAMSize.TrimStart()
 $macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
 
 #other section================================================================================
+
+#get boot device
 $macInfoBootDevice = Invoke-Expression -Command "/usr/sbin/bless --info --getboot"
 
 #get the current language
 $macInfoEFILanguage = (Get-Culture).DisplayName
+
+#get DST status
+$macInfoDSTStatus = (Get-Date).IsDaylightSavingTime()
+
+#get timezone
+$macInfoTimeZone = (Get-TimeZone).Id
+
+#get UTC offset
+$macInfoUTCOffset = (Get-TimeZone).BaseUTCOffset
+
+#filevault status
+$macInfoFileVaultStatus = Invoke-Expression -Command "/usr/bin/fdesetup status"
+##get last word of return
+$macInfoFileVaultStatus = $macInfoFileVaultStatus.Split(" ")[-1]
+##trim trailing period
+$macInfoFileVaultStatus = $macInfoFileVaultStatus.TrimEnd(".")
+
+#DNS host name
+$macInfoDNSHostName = Invoke-Expression -Command "/usr/sbin/scutil --get HostName"
+
+#local machine name
+$macInfoLocalHostName = Invoke-Expression -Command "/usr/sbin/scutil --get ComputerName"
+
+#get a list of network services. This takes a few steps. First, get the list and put it into an array
+##this does a lot of things. It runs the networksetup - listallnetworkservices, then splits that output into an array,
+##one entry per line and removes blank lines
+$macInfoNICList = (Invoke-Expression -Command "/usr/sbin/networksetup -listallnetworkservices").Split([Environment]::NewLine,[System.StringSplitOptions]::RemoveEmptyEntries)
+
+##now we remove the first line, which is unnecessary for our needs
+##and yes, i know this is not technically a nic list, but it will work for our needs
+##and it grabs services that don't have ports that -listallhardwareports would have, like iPhone USB
+$macInfoNICList = $macInfoNICList[1..($macInfoNICList.length - 1)]
+
+##now, mung the array into a single string with a comma-space separating each entry
+$macInfoNICList = $macInfoNICList -join ', ';
 
 
 #into the hashtable with you!
@@ -147,7 +184,7 @@ $macInfoHash.Add("EFIVersion", $macInfoEFIVersion)
 $macInfoHash.Add("SMCVersion", $macInfoSMCVersion)
 $macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
 $macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
-$macInfoHash.Add("EFICurrentLanguage", $macInfoEFILanguage)
+
 $macInfoHash.Add("HardwareModelName", $macInfoModelName)
 $macInfoHash.Add("HardwareModelID", $macInfoModelID)
 $macInfoHash.Add("CPUName" , $macInfoCPUName)
@@ -160,6 +197,16 @@ $macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 
 $macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
 $macInfoHash.Add("BootDevice", $macInfoBootDevice)
+$macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
+
+$macInfoHash.Add("EFICurrentLanguage", $macInfoEFILanguage)
+$macInfoHash.Add("DSTStatus", $macInfoDSTStatus)
+$macInfoHash.Add("TimeZone", $macInfoTimeZone)
+$macInfoHash.Add("UTCOffset", $macInfoUTCOffset)
+
+$macInfoHash.Add("DNSHostName", $macInfoDNSHostName)
+$macInfoHash.Add("LocalHostName", $macInfoLocalHostName)
+$macInfoHash.Add("NetworkServiceList", $macInfoNICList)
 
 
 $macInfoHash
