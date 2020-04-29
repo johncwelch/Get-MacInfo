@@ -264,6 +264,4 @@ $macInfoHash.Add("CurrentDateTime", $macInfoCurrentDate)
 $macInfoHash.Add("LastBootDateTime", $macInfoLastBoot)
 $macInfoHash.Add("Uptime", $macInfoUptime)
 
-
-
 $macInfoHash
