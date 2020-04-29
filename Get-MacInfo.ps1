@@ -131,6 +131,27 @@ $macInfoRAMSize = $macInfoRAMSize.TrimStart()
 
 #sysctl section===============================================================================
 $macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
+$macInfoVMPageFile = Invoke-Expression -Command "/usr/sbin/sysctl -n vm.swapfileprefix"
+
+##get application memory in use. This is calculated by ((vm page size) * (vm page internal count - vm page purgeable count)/1073741824)
+##to get the memory used in GB. To get this without needing a ton of lines, we're going to directly inject the vm data into the 
+##equation, via invoke-expression to the correct sysctl values. the [Int] parameter coerces that text file returned to an integer value
+##dividing by 1073741824 converts the number to GB. 
+$macInfoAppMemoryUsedGB = (([Int](Invoke-Expression -Command "/usr/sbin/sysctl -n vm.pagesize")) * (([Int](Invoke-Expression -Command "/usr/sbin/sysctl -n vm.page_pageable_internal_count")) - ([Int](Invoke-Expression -Command "/usr/sbin/sysctl -n vm.page_purgeable_count"))))/1073741824
+
+##now, we trim this down to four decimal places (just in case it's less than a GB, we get a useful number that way)
+$macInfoAppMemoryUsedGB = "{0:N4}" -f $macInfoAppMemoryUsedGB
+
+##next is current swap usage. Again, this is going to come from sysctl, specifically vm.swapusage. That reports in M as a string,
+##so we first grab the data from sysctl and split each entry into its own item in an array by splitting on spaces
+$macInfoVMSwapUsed = (Invoke-Expression -Command "/usr/sbin/sysctl -n vm.swapusage").Split(" ",[System.StringSplitOptions]::RemoveEmptyEntries)
+
+##next, the value we want is the 6th entry in the array. that's a string that ends in "M", so we want to trim that "M" from the
+##end via "TrimEnd("M"), which makes the string able to be coerced into a decimal via [Decimal], then we divide by 1024
+##to convert the data in MB to GB (we're trying to stick with GB in this where possible), and finally, we limit the decimal 
+##to four decimal places "{0,N4}" -f at the front end. Again, we use four decimal places in case there's less than a GB of swap used.
+
+$macInfoVMSwapUsed = "{0:N4}" -f (([Decimal]($macInfoVMSwapUsed[5].TrimEnd("M")))/1024)
 
 #other section================================================================================
 
@@ -182,6 +203,23 @@ $macInfoShortUserName = Invoke-Expression -Command '/usr/bin/osascript -e "get s
 #get current user UID
 $macInfoUID = Invoke-Expression -Command '/usr/bin/osascript -e "get user ID of (system info)"'
 
+#get current date and time
+$macInfoCurrentDate = Get-Date
+
+#get last boot time
+##run who -b, but splite on a space since you only get back a single line.
+$macInfoLastBoot = (Invoke-Expression -Command "/usr/bin/who -b").Split(" ",[System.StringSplitOptions]::RemoveEmptyEntries)
+##remove the first two entries, since those aren't of use here
+$macInfoLastBoot = $macInfoLastBoot[2..($macInfoLastBoot.length - 1)] 
+##convert it from an array back to a single line text string with the things we want
+$macInfoLastBoot = $macInfoLastBoot -join ' '
+
+#get uptime since
+##first, get the raw uptime
+$macInfoUptime = Get-Uptime 
+## now pull out days.hours:minutes:seconds
+$macInfoUptime = $macInfoUptime -join " "
+
 
 #into the hashtable with you!
 $macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
@@ -203,6 +241,10 @@ $macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize)
 $macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 
 $macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
+$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
+$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
+$macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
+
 $macInfoHash.Add("BootDevice", $macInfoBootDevice)
 $macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
 
@@ -217,6 +259,11 @@ $macInfoHash.Add("NetworkServiceList", $macInfoNICList)
 
 $macInfoHash.Add("CurrentUserName", $macInfoShortUserName)
 $macInfoHash.Add("CurrentUserUID", $macInfoUID)
+
+$macInfoHash.Add("CurrentDateTime", $macInfoCurrentDate)
+$macInfoHash.Add("LastBootDateTime", $macInfoLastBoot)
+$macInfoHash.Add("Uptime", $macInfoUptime)
+
 
 
 $macInfoHash
