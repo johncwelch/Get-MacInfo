@@ -8,6 +8,7 @@ This is pretty thoroughly commented, so if you read those, you should have a goo
 This is pulling data from uname, sw_ver, system_profiler, osascript, sysctl, and a number of built-in powershell functions. Currently, the values it has are:
 
 AppMemoryUsedGB
+
 BootDevice
 CPUArchitecture
 CPUBrandString
