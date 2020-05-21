@@ -285,7 +285,7 @@ $macInfoUptime = $macInfoUptime -join " "
 
 
 #into the hashtable with you!
-$macInfoHash.Add("macOSBuildLabEx", $tempString)
+$macInfoHash.Add("macOSBuildLabEx", $mainDarwinKernelVersion)
 
 $macInfoHash.Add("macOSCurrentVersion", $macInfoOSVersion)
 $macInfoHash.Add("macOSCurrentBuildNumber", $macInfoOSBuildNumber)
