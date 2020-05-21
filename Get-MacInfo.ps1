@@ -1,5 +1,69 @@
 #!/usr/bin/env pwsh
 
+<#
+.SYNOPSIS
+This is a powershell script for macOS that replicates, or tries to, the "Get-ComputerInfo" command for Windows Powershell
+
+.DESCRIPTION
+It's not a 1:1 replication, some of it wouldn't make any sense on a Mac. Also, it does check to make sure it's running
+on a mac. This pulls information from a variet of sources, including uname, sysctl, AppleScript, sw_ver, system_profiler,
+and some built-in powershell functions. It shoves it all into an ordered hashtable so there's some coherency in the output.
+If you run the script without any parameters, you get all the items in the hashtable. If you provide one key as a parameter, 
+you get the informatio for that key. You can provide a comma-separated list of keys and you'll get that as a result.
+
+Current keys are:
+macOSBuildLabEx
+macOSCurrentVersion
+macOSCurrentBuildNumber
+macOSProductName
+macOSDarwinVersion
+EFIVersion
+SMCVersion
+HardwareSerialNumber
+HardwareUUID
+HardwareModelName
+HardwareModelID
+CPUArchitecture
+CPUName
+CPUSpeed
+CPUCount
+CPUCoreCount
+CPUL2CacheSize
+CPUBrandString
+L3CacheSize
+RAMAmount
+AppMemoryUsedGB
+VMPageFile
+VMSwapInUseGB
+BootDevice
+FileVaultStatus
+EFICurrentLanguage
+DSTStatus
+TimeZone
+UTCOffset
+DNSHostName
+LocalHostName
+NetworkServiceList
+CurrentUserName
+CurrentUserUID
+CurrentDateTime
+LastBootDateTime
+Uptime
+
+.EXAMPLE
+./Get-MacInfo.ps1
+
+.NOTES
+This will eventually be a module for folks using Powershell on the mac. It's a really useful language and should be of great use
+to scripters. 
+
+.LINK
+https://github.com/johncwelch/Get-MacInfo
+#>
+
+#input parameter line, has to be the first executable line in the script
+param ($keys)
+
 #check to make sure this is running on a mac, if not, print error message and exit
 if (-Not $IsMacOS)
      {
@@ -9,11 +73,15 @@ if (-Not $IsMacOS)
 
 #since the idea of this is to create a version of Get-Computerinfo for the Mac
 
+
+
+
+
 #create the main hashtable that will hold all the values. This will allow for easier retreival of data
 #in a more normal powershell way. Hashtables will work well since we're going to have no repeating keys and allows us to use "normal"
 #dot notation to retrieve values. 
 
-$macInfoHash = @{}
+$macInfoHash = [ordered]@{}
 
 #uname section============================
 
@@ -31,9 +99,9 @@ $darwinVersionSplitOptions = [System.StringSplitOptions]::RemoveEmptyEntries
 #create our array of strings
 $mainDarwinVersionArray = $getMainDarwinVersion.Split($darwinVersionSeparator,$darwinVersionSplitOptions)
 
-#lets get the kernel build info and shove it into the hashtable
+#lets get the kernel build info
 $tempString = $mainDarwinVersionArray[10]
-$macInfoHash.Add("macOSBuildLabEx", $tempString)
+
 
 #get the kernel version info
 $tempString = $mainDarwinVersionArray[3]
@@ -51,11 +119,6 @@ $macInfoCPUArch = Invoke-Expression -Command "/usr/bin/uname -m"
 $macInfoOSVersion = Invoke-Expression -Command "/usr/bin/sw_vers -productVersion"
 $macInfoOSBuildNumber = Invoke-Expression -Command "/usr/bin/sw_vers -buildVersion"
 $macInfoOSName = Invoke-Expression -Command "/usr/bin/sw_vers -productName"
-
-#shove them into the hashTable
-$macInfoHash.Add("macOSCurrentVersion", $macInfoOSVersion)
-$macInfoHash.Add("macOSCurrentBuildNumber", $macInfoOSBuildNumber)
-$macInfoHash.Add("macOSProductName", $macInfoOSName)
 
 #system_profiler section=========================================================
 
@@ -222,8 +285,14 @@ $macInfoUptime = $macInfoUptime -join " "
 
 
 #into the hashtable with you!
+$macInfoHash.Add("macOSBuildLabEx", $tempString)
+
+$macInfoHash.Add("macOSCurrentVersion", $macInfoOSVersion)
+$macInfoHash.Add("macOSCurrentBuildNumber", $macInfoOSBuildNumber)
+$macInfoHash.Add("macOSProductName", $macInfoOSName)
+
 $macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
-$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
+
 
 $macInfoHash.Add("EFIVersion", $macInfoEFIVersion)
 $macInfoHash.Add("SMCVersion", $macInfoSMCVersion)
@@ -232,17 +301,20 @@ $macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
 
 $macInfoHash.Add("HardwareModelName", $macInfoModelName)
 $macInfoHash.Add("HardwareModelID", $macInfoModelID)
+
+$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
 $macInfoHash.Add("CPUName" , $macInfoCPUName)
 $macInfoHash.Add("CPUSpeed", $macInfoCPUSpeed)
 $macInfoHash.Add("CPUCount", $macInfoCPUCount)
 $macInfoHash.Add("CPUCoreCount", $macInfoCPUCoreCount)
 $macInfoHash.Add("CPUL2CacheSize", $macInfoCPUL2CacheSize)
+$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
 $macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize)
 $macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 
-$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
-$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
+
 $macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
+$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
 $macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
 
 $macInfoHash.Add("BootDevice", $macInfoBootDevice)
@@ -264,4 +336,31 @@ $macInfoHash.Add("CurrentDateTime", $macInfoCurrentDate)
 $macInfoHash.Add("LastBootDateTime", $macInfoLastBoot)
 $macInfoHash.Add("Uptime", $macInfoUptime)
 
-$macInfoHash
+#so we want the hashtable to be filled before we even care about what the person asked for. This is lazy as hell, to be sure, but,
+#it ensures that no matter what the parameter asks for, it will work. Also really, the entire thing takes just over a second to run,
+#even on a ten-year-old macbook pro.
+
+#so here, we're checking to see if there's no input parameters, which means display the entire hashtable. We're not formatting it,
+#the default is fine.
+
+#if there are input parameters, we use the -f formatting operator to create two columns labled "Name", and "Value", setting the first one
+#to 30 characters, which gives us some space as our longest key is only about 24 characters in width, and the value column to 100 characters
+#both columns are lef-aligned.
+
+#I did try to use -format table, but it didn't work out
+
+if ($keys -eq $null) {
+     $macInfoHash
+     Exit-PSSession
+}
+else {
+     "{0,-30}{1,-100}" -f "Name","Value"
+     "{0,-30}{1,-100}" -f "----","-----"
+     foreach ($key in $keys) {
+          $theValue = $macInfoHash.$key
+          "{0,-30}{1,-100}" -f $key,$theValue
+     }
+     
+}
+     
+
