@@ -60,7 +60,7 @@ to scripters.
 .LINK
 https://github.com/johncwelch/Get-MacInfo
 #>
-function Get-MacInfo {
+#function Get-MacInfo {
      #input parameter line, has to be the first executable line in the script
      param ($keys)
 
@@ -345,7 +345,7 @@ function Get-MacInfo {
 
      #I did try to use -format table, but it didn't work out
 
-     if ($keys -eq $null) {
+     if ($null -eq $keys) {
           $macInfoHash
           Exit-PSSession
      }
@@ -357,6 +357,6 @@ function Get-MacInfo {
                "{0,-30}{1,-100}" -f $key,$theValue
      }
 }
-}
+#}
 
-Export-ModuleMember -Function Get-MacInfo
+#Export-ModuleMember -Function Get-MacInfo
