@@ -9,6 +9,7 @@
 @{
 
     # Script module or binary module file associated with this manifest.
+    #THIS NOT BEING COMMENTED OUT IS VERY IMPORTANT!!
     RootModule = 'Get-MacInfo.psm1'
     
     # Version number of this module.
