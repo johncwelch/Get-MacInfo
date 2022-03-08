@@ -17,12 +17,14 @@ macOSCurrentVersion
 macOSCurrentBuildNumber
 macOSProductName
 macOSDarwinVersion
-EFIVersion
-SMCVersion
+SystemFirmwareVersion
+OSLoaderVersion
 HardwareSerialNumber
 HardwareUUID
+ProvisioningUDID
 HardwareModelName
 HardwareModelID
+ActivationLockStatus
 CPUArchitecture
 CPUName
 CPUSpeed
@@ -31,6 +33,7 @@ CPUCoreCount
 CPUL2CacheSize
 CPUBrandString
 L3CacheSize
+HyperThreadingEnabled
 RAMAmount
 AppMemoryUsedGB
 VMPageFile
