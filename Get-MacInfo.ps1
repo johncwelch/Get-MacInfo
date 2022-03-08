@@ -120,77 +120,92 @@ $macInfoOSVersion = Invoke-Expression -Command "/usr/bin/sw_vers -productVersion
 $macInfoOSBuildNumber = Invoke-Expression -Command "/usr/bin/sw_vers -buildVersion"
 $macInfoOSName = Invoke-Expression -Command "/usr/bin/sw_vers -productName"
 
-#system_profiler section=========================================================
+ #system_profiler section=========================================================
 
-#now, let's get our system_profiler info
-$macInfoSystemProfilerRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType"
+     #now, let's get our system_profiler info
+     $macInfoSystemProfilerRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType"
 
-#we want to shove this into an array and remove blank lines. Luckily, we have the remove blank lines option from an earlier step,
-#so we can just reuse that. We also want to have the split command just split on a new line. 
-#the [Environment]::NewLine parameter handles splitting on a new line.
-$macInfoSystemProfilerArray = $macInfoSystemProfilerRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
+     #we want to shove this into an array and remove blank lines. Luckily, we have the remove blank lines option from an earlier step,
+     #so we can just reuse that. We also want to have the split command just split on a new line. 
+     #the [Environment]::NewLine parameter handles splitting on a new line.
+     $macInfoSystemProfilerArray = $macInfoSystemProfilerRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
 
-#now we have to get clever. So we're going to put this array into an arraylist so we can arbitrarily remove items we don't need.
-#yes, it's a memory hog, but this is a very tiny array
+     #now we have to get clever. So we're going to put this array into an arraylist so we can arbitrarily remove items we don't need.
+     #yes, it's a memory hog, but this is a very tiny array
 
-[System.Collections.ArrayList]$macInfoSystemProfilerArrayList = $macInfoSystemProfilerArray 
+     [System.Collections.ArrayList]$macInfoSystemProfilerArrayList = $macInfoSystemProfilerArray 
 
-#now we remove the first two items. Note that RemoveRange parameters read as (startingIndex,numberofItemsToRemove)
-$macInfoSystemProfilerArrayList.RemoveRange(0,2)
+     #now we remove the first two items. Note that RemoveRange parameters read as (startingIndex,numberofItemsToRemove)
+     $macInfoSystemProfilerArrayList.RemoveRange(0,2)
 
-#we want to start grabbing items. first we grab the EFI version, aka Boot ROM version. We only want the last part, so
-#we split on the colon, and grab the second part [1]
-$macInfoEFIVersion = $macInfoSystemProfilerArrayList[9].Split(":")[1]
+     #we want to start grabbing items. first we grab the EFI version, aka Boot ROM version. We only want the last part, so
+     #we split on the colon, and grab the second part [1]
+     #this is actually now referred to as the System Firmware Version, so we'll rename that
+     $macInfoEFIVersion = $macInfoSystemProfilerArrayList[10].Split(":")[1]
 
-#now we trim the leading space. If we don't put anything in the parens, it just yoinks the first character
-$macInfoEFIVersion = $macInfoEFIVersion.TrimStart()
+     #now we trim the leading space. If we don't put anything in the parens, it just yoinks the first character
+     $macInfoEFIVersion = $macInfoEFIVersion.TrimStart()
 
-#smc version
-$macInfoSMCVersion = $macInfoSystemProfilerArrayList[10].Split(":")[1]
-$macInfoSMCVersion = $macInfoSMCVersion.TrimStart()
+     #smc version
+     #now the OS Loader version
+     $macInfoSMCVersion = $macInfoSystemProfilerArrayList[11].Split(":")[1]
+     $macInfoSMCVersion = $macInfoSMCVersion.TrimStart()
 
-#hardware serial number
-$macInfoHardwareSN = $macInfoSystemProfilerArrayList[11].Split(":")[1]
-$macInfoHardwareSN = $macInfoHardwareSN.TrimStart()
+     #hardware serial number
+     $macInfoHardwareSN = $macInfoSystemProfilerArrayList[12].Split(":")[1]
+     $macInfoHardwareSN = $macInfoHardwareSN.TrimStart()
 
-#hardware UUID
-$macInfoHardwareUUID = $macInfoSystemProfilerArrayList[12].Split(":")[1]
-$macInfoHardwareUUID = $macInfoHardwareUUID.TrimStart()
+     #hardware UUID
+     $macInfoHardwareUUID = $macInfoSystemProfilerArrayList[13].Split(":")[1]
+     $macInfoHardwareUUID = $macInfoHardwareUUID.TrimStart()
 
-#model name
-$macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1]
-$macInfoModelName = $macInfoModelName.TrimStart()
+     #provisioning UUID
+     $macInfoProvisioningUDID = $macInfoSystemProfilerArrayList[14].Split(":")[1]
+     $macInfoProvisioningUDID = $macInfoProvisioningUDID.TrimStart()
 
-#model Identfier
-$macInfoModelID = $macInfoSystemProfilerArrayList[1].Split(":")[1]
-$macInfoModelID = $macInfoModelID.TrimStart()
+     #activation Lock status
+     $macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[15].Split(":")[1]
+     $macInfoActivationLockStatus = $macInfoActivationLockStatus.TrimStart()
 
-#CPU Model
-$macInfoCPUName = $macInfoSystemProfilerArrayList[2].Split(":")[1]
-$macInfoCPUName = $macInfoCPUName.TrimStart()
+     #model name
+     $macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1]
+     $macInfoModelName = $macInfoModelName.TrimStart()
 
-#CPU Speed
-$macInfoCPUSpeed = $macInfoSystemProfilerArrayList[3].Split(":")[1]
-$macInfoCPUSpeed = $macInfoCPUSpeed.TrimStart()
+     #model Identfier
+     $macInfoModelID = $macInfoSystemProfilerArrayList[1].Split(":")[1]
+     $macInfoModelID = $macInfoModelID.TrimStart()
 
-# CPU Count
-$macInfoCPUCount = $macInfoSystemProfilerArrayList[4].Split(":")[1]
-$macInfoCPUCount = $macInfoCPUCount.TrimStart()
+     #CPU Model
+     $macInfoCPUName = $macInfoSystemProfilerArrayList[2].Split(":")[1]
+     $macInfoCPUName = $macInfoCPUName.TrimStart()
 
-#core count
-$macInfoCPUCoreCount = $macInfoSystemProfilerArrayList[5].Split(":")[1]
-$macInfoCPUCoreCount = $macInfoCPUCoreCount.TrimStart()
+     #CPU Speed
+     $macInfoCPUSpeed = $macInfoSystemProfilerArrayList[3].Split(":")[1]
+     $macInfoCPUSpeed = $macInfoCPUSpeed.TrimStart()
 
-#L2 Cache Size
-$macInfoCPUL2CacheSize = $macInfoSystemProfilerArrayList[6].Split(":")[1]
-$macInfoCPUL2CacheSize = $macInfoCPUL2CacheSize.TrimStart()
+     # CPU Count
+     $macInfoCPUCount = $macInfoSystemProfilerArrayList[4].Split(":")[1]
+     $macInfoCPUCount = $macInfoCPUCount.TrimStart()
 
-#L3 Cache size
-$macInfoL3CacheSize = $macInfoSystemProfilerArrayList[7].Split(":")[1]
-$macInfoL3CacheSize = $macInfoL3CacheSize.TrimStart()
+     #core count
+     $macInfoCPUCoreCount = $macInfoSystemProfilerArrayList[5].Split(":")[1]
+     $macInfoCPUCoreCount = $macInfoCPUCoreCount.TrimStart()
 
-$macInfoRAMSize = $macInfoSystemProfilerArrayList[8].Split(":")[1]
-$macInfoRAMSize = $macInfoRAMSize.TrimStart()
+     #L2 Cache Size
+     $macInfoCPUL2CacheSize = $macInfoSystemProfilerArrayList[6].Split(":")[1]
+     $macInfoCPUL2CacheSize = $macInfoCPUL2CacheSize.TrimStart()
+
+     #L3 Cache size
+     $macInfoL3CacheSize = $macInfoSystemProfilerArrayList[7].Split(":")[1]
+     $macInfoL3CacheSize = $macInfoL3CacheSize.TrimStart()
+
+     #hyperthreading status
+     $macInfoHyperThreadingEnabled = $macInfoSystemProfilerArrayList[8].Split(":")[1]
+     $macInfoHyperThreadingEnabled = $macInfoHyperThreadingEnabled.TrimStart()
+     
+     #RAM size
+     $macInfoRAMSize = $macInfoSystemProfilerArrayList[9].Split(":")[1]
+     $macInfoRAMSize = $macInfoRAMSize.TrimStart()
 
 #sysctl section===============================================================================
 $macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
@@ -294,13 +309,15 @@ $macInfoHash.Add("macOSProductName", $macInfoOSName)
 $macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
 
 
-$macInfoHash.Add("EFIVersion", $macInfoEFIVersion)
-$macInfoHash.Add("SMCVersion", $macInfoSMCVersion)
+$macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
+$macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
 $macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
 $macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
+$macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
 
 $macInfoHash.Add("HardwareModelName", $macInfoModelName)
 $macInfoHash.Add("HardwareModelID", $macInfoModelID)
+$macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
 
 $macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
 $macInfoHash.Add("CPUName" , $macInfoCPUName)
@@ -310,6 +327,7 @@ $macInfoHash.Add("CPUCoreCount", $macInfoCPUCoreCount)
 $macInfoHash.Add("CPUL2CacheSize", $macInfoCPUL2CacheSize)
 $macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
 $macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize)
+$macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled)
 $macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 
 

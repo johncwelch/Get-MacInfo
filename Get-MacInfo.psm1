@@ -9,7 +9,7 @@ It's not a 1:1 replication, some of it wouldn't make any sense on a Mac. Also, i
 on a mac. This pulls information from a variet of sources, including uname, sysctl, AppleScript, sw_ver, system_profiler,
 and some built-in powershell functions. It shoves it all into an ordered hashtable so there's some coherency in the output.
 If you run the script without any parameters, you get all the items in the hashtable. If you provide one key as a parameter, 
-you get the informatio for that key. You can provide a comma-separated list of keys and you'll get that as a result.
+you get the information for that key. You can provide a comma-separated list of keys and you'll get that as a result.
 
 Current keys are:
 macOSBuildLabEx
@@ -51,11 +51,16 @@ LastBootDateTime
 Uptime
 
 .EXAMPLE
-./Get-MacInfo.ps1
+Get-MacInfo by itself gives you all the parameters it can output
+
+.EXAMPLE
+Get-MacInfo TimeZone gives you the current timezone for the computer
+
+.EXAMPLE
+Get-MacInfo TimeZone,FileVault status gives you the current timezone and the filevault status for the computer
 
 .NOTES
-This will eventually be a module for folks using Powershell on the mac. It's a really useful language and should be of great use
-to scripters. 
+This can be used as a Powershell module or as a standalone script. 
 
 .LINK
 https://github.com/johncwelch/Get-MacInfo
@@ -136,22 +141,32 @@ function Get-MacInfo {
 
      #we want to start grabbing items. first we grab the EFI version, aka Boot ROM version. We only want the last part, so
      #we split on the colon, and grab the second part [1]
-     $macInfoEFIVersion = $macInfoSystemProfilerArrayList[9].Split(":")[1]
+     #this is actually now referred to as the System Firmware Version, so we'll rename that
+     $macInfoEFIVersion = $macInfoSystemProfilerArrayList[10].Split(":")[1]
 
      #now we trim the leading space. If we don't put anything in the parens, it just yoinks the first character
      $macInfoEFIVersion = $macInfoEFIVersion.TrimStart()
 
      #smc version
-     $macInfoSMCVersion = $macInfoSystemProfilerArrayList[10].Split(":")[1]
+     #now the OS Loader version
+     $macInfoSMCVersion = $macInfoSystemProfilerArrayList[11].Split(":")[1]
      $macInfoSMCVersion = $macInfoSMCVersion.TrimStart()
 
      #hardware serial number
-     $macInfoHardwareSN = $macInfoSystemProfilerArrayList[11].Split(":")[1]
+     $macInfoHardwareSN = $macInfoSystemProfilerArrayList[12].Split(":")[1]
      $macInfoHardwareSN = $macInfoHardwareSN.TrimStart()
 
      #hardware UUID
-     $macInfoHardwareUUID = $macInfoSystemProfilerArrayList[12].Split(":")[1]
+     $macInfoHardwareUUID = $macInfoSystemProfilerArrayList[13].Split(":")[1]
      $macInfoHardwareUUID = $macInfoHardwareUUID.TrimStart()
+
+     #provisioning UUID
+     $macInfoProvisioningUDID = $macInfoSystemProfilerArrayList[14].Split(":")[1]
+     $macInfoProvisioningUDID = $macInfoProvisioningUDID.TrimStart()
+
+     #activation Lock status
+     $macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[15].Split(":")[1]
+     $macInfoActivationLockStatus = $macInfoActivationLockStatus.TrimStart()
 
      #model name
      $macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1]
@@ -185,7 +200,12 @@ function Get-MacInfo {
      $macInfoL3CacheSize = $macInfoSystemProfilerArrayList[7].Split(":")[1]
      $macInfoL3CacheSize = $macInfoL3CacheSize.TrimStart()
 
-     $macInfoRAMSize = $macInfoSystemProfilerArrayList[8].Split(":")[1]
+     #hyperthreading status
+     $macInfoHyperThreadingEnabled = $macInfoSystemProfilerArrayList[8].Split(":")[1]
+     $macInfoHyperThreadingEnabled = $macInfoHyperThreadingEnabled.TrimStart()
+     
+     #RAM size
+     $macInfoRAMSize = $macInfoSystemProfilerArrayList[9].Split(":")[1]
      $macInfoRAMSize = $macInfoRAMSize.TrimStart()
 
      #sysctl section===============================================================================
@@ -290,13 +310,15 @@ function Get-MacInfo {
      $macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
 
 
-     $macInfoHash.Add("EFIVersion", $macInfoEFIVersion)
-     $macInfoHash.Add("SMCVersion", $macInfoSMCVersion)
+     $macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
+     $macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
      $macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
      $macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
+     $macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
 
      $macInfoHash.Add("HardwareModelName", $macInfoModelName)
      $macInfoHash.Add("HardwareModelID", $macInfoModelID)
+     $macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
 
      $macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
      $macInfoHash.Add("CPUName" , $macInfoCPUName)
@@ -306,6 +328,7 @@ function Get-MacInfo {
      $macInfoHash.Add("CPUL2CacheSize", $macInfoCPUL2CacheSize)
      $macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
      $macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize)
+     $macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled)
      $macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 
 
