@@ -123,7 +123,7 @@ $macInfoOSVersion = Invoke-Expression -Command "/usr/bin/sw_vers -productVersion
 $macInfoOSBuildNumber = Invoke-Expression -Command "/usr/bin/sw_vers -buildVersion"
 $macInfoOSName = Invoke-Expression -Command "/usr/bin/sw_vers -productName"
 
- #system_profiler section=========================================================
+#system_profiler section=========================================================
 
      #now, let's get our system_profiler info
      $macInfoSystemProfilerRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType"
