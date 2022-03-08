@@ -7,77 +7,85 @@ This is pretty thoroughly commented, so if you read those, you should have a goo
 
 This is pulling data from uname, sw_ver, system_profiler, osascript, sysctl, and a number of built-in powershell functions. Currently, the keys it has are:
 
-AppMemoryUsedGB
+macOSBuildLabEx
 
-BootDevice
+macOSCurrentVersion
 
-CPUArchitecture
+macOSCurrentBuildNumber
 
-CPUBrandString
+macOSProductName
 
-CPUCoreCount
+macOSDarwinVersion
 
-CPUCount
+SystemFirmwareVersion
 
-CPUL2CacheSize
-
-CPUName
-
-CPUSpeed
-
-CurrentDateTime
-
-CurrentUserName
-
-CurrentUserUID
-
-DNSHostName
-
-DSTStatus
-
-EFICurrentLanguage
-
-EFIVersion
-
-FileVaultStatus
-
-HardwareModelID
-
-HardwareModelName
+OSLoaderVersion
 
 HardwareSerialNumber
 
 HardwareUUID
 
+ProvisioningUDID
+
+HardwareModelName
+
+HardwareModelID
+
+ActivationLockStatus
+
+CPUArchitecture
+
+CPUName
+
+CPUSpeed
+
+CPUCount
+
+CPUCoreCount
+
+CPUL2CacheSize
+
+CPUBrandString
+
 L3CacheSize
 
-LastBootDateTime
-
-LocalHostName
-
-macOSBuildLabEx
-
-macOSCurrentBuildNumber
-
-macOSCurrentVersion
-
-macOSDarwinVersion
-
-macOSProductName
+HyperThreadingEnabled
 
 RAMAmount
 
-SMCVersion
-
-TimeZone
-
-Uptime
-
-UTCOffset
+AppMemoryUsedGB
 
 VMPageFile
 
 VMSwapInUseGB
+
+BootDevice
+
+FileVaultStatus
+
+EFICurrentLanguage
+
+DSTStatus
+
+TimeZone
+
+UTCOffset
+
+DNSHostName
+
+LocalHostName
+
+NetworkServiceList
+
+CurrentUserName
+
+CurrentUserUID
+
+CurrentDateTime
+
+LastBootDateTime
+
+Uptime
 
 obviously, this list is expandable.
 
@@ -90,3 +98,6 @@ added -
   
 27 May 2020 update
 IT'S ALIVE! IT WORKS AS A MODULE! 
+
+7 Mar 2022 update
+Edits to account for changes to system profiler output. Added Hyperthreading status, provisioningudid, activation lock status, renamed EFI to SystemFirmwareVersion and SMC to OSLoaderVersion
