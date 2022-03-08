@@ -77,22 +77,32 @@ $macInfoSystemProfilerArrayList.RemoveRange(0,2)
 
 #we want to start grabbing items. first we grab the EFI version, aka Boot ROM version. We only want the last part, so
 #we split on the colon, and grab the second part [1]
-$macInfoEFIVersion = $macInfoSystemProfilerArrayList[9].Split(":")[1]
+#this is actually now referred to as the System Firmware Version, so we'll rename that
+$macInfoEFIVersion = $macInfoSystemProfilerArrayList[10].Split(":")[1]
 
 #now we trim the leading space. If we don't put anything in the parens, it just yoinks the first character
 $macInfoEFIVersion = $macInfoEFIVersion.TrimStart()
 
 #smc version
-$macInfoSMCVersion = $macInfoSystemProfilerArrayList[10].Split(":")[1]
+#now the OS Loader version
+$macInfoSMCVersion = $macInfoSystemProfilerArrayList[11].Split(":")[1]
 $macInfoSMCVersion = $macInfoSMCVersion.TrimStart()
 
 #hardware serial number
-$macInfoHardwareSN = $macInfoSystemProfilerArrayList[11].Split(":")[1]
+$macInfoHardwareSN = $macInfoSystemProfilerArrayList[12].Split(":")[1]
 $macInfoHardwareSN = $macInfoHardwareSN.TrimStart()
 
 #hardware UUID
-$macInfoHardwareUUID = $macInfoSystemProfilerArrayList[12].Split(":")[1]
+$macInfoHardwareUUID = $macInfoSystemProfilerArrayList[13].Split(":")[1]
 $macInfoHardwareUUID = $macInfoHardwareUUID.TrimStart()
+
+#provisioning UUID
+$macInfoProvisioningUDID = $macInfoSystemProfilerArrayList[14].Split(":")[1]
+$macInfoProvisioningUDID = $macInfoProvisioningUDID.TrimStart()
+
+#activation Lock status
+$macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[15].Split(":")[1]
+$macInfoActivationLockStatus = $macInfoActivationLockStatus.TrimStart()
 
 #model name
 $macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1]
@@ -126,7 +136,12 @@ $macInfoCPUL2CacheSize = $macInfoCPUL2CacheSize.TrimStart()
 $macInfoL3CacheSize = $macInfoSystemProfilerArrayList[7].Split(":")[1]
 $macInfoL3CacheSize = $macInfoL3CacheSize.TrimStart()
 
-$macInfoRAMSize = $macInfoSystemProfilerArrayList[8].Split(":")[1]
+#hyperthreading status
+$macInfoHyperThreadingEnabled = $macInfoSystemProfilerArrayList[8].Split(":")[1]
+$macInfoHyperThreadingEnabled = $macInfoHyperThreadingEnabled.TrimStart()
+     
+#RAM size
+$macInfoRAMSize = $macInfoSystemProfilerArrayList[9].Split(":")[1]
 $macInfoRAMSize = $macInfoRAMSize.TrimStart()
 
 #sysctl section===============================================================================
@@ -222,27 +237,39 @@ $macInfoUptime = $macInfoUptime -join " "
 
 
 #into the hashtable with you!
-$macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
-$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
+$macInfoHash.Add("macOSBuildLabEx", $mainDarwinKernelVersion)
 
-$macInfoHash.Add("EFIVersion", $macInfoEFIVersion)
-$macInfoHash.Add("SMCVersion", $macInfoSMCVersion)
+$macInfoHash.Add("macOSCurrentVersion", $macInfoOSVersion)
+$macInfoHash.Add("macOSCurrentBuildNumber", $macInfoOSBuildNumber)
+$macInfoHash.Add("macOSProductName", $macInfoOSName)
+
+$macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
+
+
+$macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
+$macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
 $macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
 $macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
+$macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
 
 $macInfoHash.Add("HardwareModelName", $macInfoModelName)
 $macInfoHash.Add("HardwareModelID", $macInfoModelID)
+$macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
+
+$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
 $macInfoHash.Add("CPUName" , $macInfoCPUName)
 $macInfoHash.Add("CPUSpeed", $macInfoCPUSpeed)
 $macInfoHash.Add("CPUCount", $macInfoCPUCount)
 $macInfoHash.Add("CPUCoreCount", $macInfoCPUCoreCount)
 $macInfoHash.Add("CPUL2CacheSize", $macInfoCPUL2CacheSize)
+$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
 $macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize)
+$macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled)
 $macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 
-$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
-$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
+
 $macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
+$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
 $macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
 
 $macInfoHash.Add("BootDevice", $macInfoBootDevice)
