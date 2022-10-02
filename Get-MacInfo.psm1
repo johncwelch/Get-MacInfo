@@ -10,8 +10,11 @@ on a mac. This pulls information from a variet of sources, including uname, sysc
 and some built-in powershell functions. It shoves it all into an ordered hashtable so there's some coherency in the output.
 If you run the script without any parameters, you get all the items in the hashtable. If you provide one key as a parameter, 
 you get the information for that key. You can provide a comma-separated list of keys and you'll get that as a result.
+<<<<<<< HEAD
 
 Note: the keys labled "Intel Only" don't exist for Apple Silicon.
+=======
+>>>>>>> cbb1d8f (First updates for Apple Silicon)
 
 Current keys are:
 macOSBuildLabEx
@@ -29,13 +32,23 @@ HardwareModelID
 ActivationLockStatus
 CPUArchitecture
 CPUName
+<<<<<<< HEAD
 CPUSpeed (Intel Only)
 CPUCount (Intel Only)
+=======
+CPUSpeed
+CPUCountMove-ItemProperty
+>>>>>>> cbb1d8f (First updates for Apple Silicon)
 CPUCoreCount
 CPUL2CacheSize (Intel Only)
 CPUBrandString
+<<<<<<< HEAD
 L3CacheSize (Intel Only)
 HyperThreadingEnabled (Intel Only)
+=======
+L3CacheSize
+HyperThreadingEnabled
+>>>>>>> cbb1d8f (First updates for Apple Silicon)
 RAMAmount
 AppMemoryUsedGB
 VMPageFile

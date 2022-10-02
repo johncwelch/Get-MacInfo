@@ -11,6 +11,8 @@ and some built-in powershell functions. It shoves it all into an ordered hashtab
 If you run the script without any parameters, you get all the items in the hashtable. If you provide one key as a parameter, 
 you get the informatio for that key. You can provide a comma-separated list of keys and you'll get that as a result.
 
+Working on making this work for Apple Silicon, there's not a lot of differences outside of the system profiler stuff. Added "Intel only to where, well.."
+
 Current keys are:
 macOSBuildLabEx
 macOSCurrentVersion
@@ -27,13 +29,18 @@ HardwareModelID
 ActivationLockStatus
 CPUArchitecture
 CPUName
-CPUSpeed
-CPUCount
+CPUSpeed (Intel Only)
+CPUCount (Intel Only)
 CPUCoreCount
-CPUL2CacheSize
+CPUL2CacheSize (Intel Only)
 CPUBrandString
+<<<<<<< HEAD
 L3CacheSize
 HyperThreadingEnabled
+=======
+L3CacheSize (Intel Only)
+HyperthreadingEnabled (Intel Only)
+>>>>>>> cbb1d8f (First updates for Apple Silicon)
 RAMAmount
 AppMemoryUsedGB
 VMPageFile
