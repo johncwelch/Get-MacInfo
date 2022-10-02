@@ -4,6 +4,8 @@ There are things that are in Get-Computerinfo that are not here, some because th
 
 This is pretty thoroughly commented, so if you read those, you should have a good idea of what is going on.
 
+20221001 Added support for differences between Apple Silicon and Intel
+
 This is pulling data from uname, sw_ver, system_profiler, osascript, sysctl, and a number of built-in powershell functions. Currently, the keys it has are:
 
 macOSBuildLabEx
@@ -36,19 +38,19 @@ CPUArchitecture
 
 CPUName
 
-CPUSpeed
+CPUSpeed (Intel Only)
 
-CPUCount
+CPUCount  (Intel Only)
 
 CPUCoreCount
 
-CPUL2CacheSize
+CPUL2CacheSize  (Intel Only)
 
 CPUBrandString
 
-L3CacheSize
+L3CacheSize  (Intel Only)
 
-HyperThreadingEnabled
+HyperThreadingEnabled  (Intel Only)
 
 RAMAmount
 
