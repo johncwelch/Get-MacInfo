@@ -4,7 +4,11 @@ There are things that are in Get-Computerinfo that are not here, some because th
 
 This is pretty thoroughly commented, so if you read those, you should have a good idea of what is going on.
 
+<<<<<<< HEAD
 20221001 Added support for differences between Apple Silicon and Intel
+=======
+Added code for the differences between Apple Silicon and Intel
+>>>>>>> b5e2457 (Apple silicon updates)
 
 This is pulling data from uname, sw_ver, system_profiler, osascript, sysctl, and a number of built-in powershell functions. Currently, the keys it has are:
 
@@ -40,6 +44,7 @@ CPUName
 
 CPUSpeed (Intel Only)
 
+<<<<<<< HEAD
 CPUCount  (Intel Only)
 
 CPUCoreCount
@@ -51,6 +56,19 @@ CPUBrandString
 L3CacheSize  (Intel Only)
 
 HyperThreadingEnabled  (Intel Only)
+=======
+CPUCount (Intel Only)
+
+CPUCoreCount
+
+CPUL2CacheSize (Intel Only)
+
+CPUBrandString
+
+L3CacheSize (Intel Only)
+
+HyperThreadingEnabled (Intel Only)
+>>>>>>> b5e2457 (Apple silicon updates)
 
 RAMAmount
 
