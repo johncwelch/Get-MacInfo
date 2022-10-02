@@ -11,6 +11,8 @@ and some built-in powershell functions. It shoves it all into an ordered hashtab
 If you run the script without any parameters, you get all the items in the hashtable. If you provide one key as a parameter, 
 you get the information for that key. You can provide a comma-separated list of keys and you'll get that as a result.
 
+Note: the keys labled "Intel Only" don't exist for Apple Silicon.
+
 Current keys are:
 macOSBuildLabEx
 macOSCurrentVersion
@@ -27,13 +29,13 @@ HardwareModelID
 ActivationLockStatus
 CPUArchitecture
 CPUName
-CPUSpeed
-CPUCount
+CPUSpeed (Intel Only)
+CPUCount (Intel Only)
 CPUCoreCount
-CPUL2CacheSize
+CPUL2CacheSize (Intel Only)
 CPUBrandString
-L3CacheSize
-HyperThreadingEnabled
+L3CacheSize (Intel Only)
+HyperThreadingEnabled (Intel Only)
 RAMAmount
 AppMemoryUsedGB
 VMPageFile
@@ -89,6 +91,15 @@ function Get-MacInfo {
 
      #uname section============================
 
+     #get CPU Architecture
+     #we have to do this first so we can account for the CPU differences
+     $macInfoCPUArch = Invoke-Expression -Command "/usr/bin/uname -m"
+     if ($macInfoCPUArch -eq "x86_64") {
+          $isAppleSilicon = $false
+     } else {
+          $isAppleSilicon = $true
+     }
+
      #we're going to try to mirror the results of the windows version of Get-ComputerInfo as much as possible
      #first get the kernel version as maintDarwinVersion. This is initially a string
      $getMainDarwinVersion = Invoke-Expression -Command "/usr/bin/uname -v"
@@ -113,9 +124,6 @@ function Get-MacInfo {
      $mainDarwinKernelVersion = $tempString.Substring(0,$tempString.Length-1)
 
 
-     #get CPU Architecture
-     $macInfoCPUArch = Invoke-Expression -Command "/usr/bin/uname -m"
-
      #sw_ver section===============================================================
 
 
@@ -128,6 +136,16 @@ function Get-MacInfo {
 
      #now, let's get our system_profiler info
      $macInfoSystemProfilerRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType"
+
+     ##Apple Silicon Differences
+     #Chip: instead of Processor Name:
+     #No Processor Speed:
+     #No Number of Processors
+     #Total Number of Cores: has more info
+     #No L2 Cache:
+     #No L3 Cache:
+     #No HyperThreading Technology:
+
 
      #we want to shove this into an array and remove blank lines. Luckily, we have the remove blank lines option from an earlier step,
      #so we can just reuse that. We also want to have the split command just split on a new line. 
@@ -142,74 +160,125 @@ function Get-MacInfo {
      #now we remove the first two items. Note that RemoveRange parameters read as (startingIndex,numberofItemsToRemove)
      $macInfoSystemProfilerArrayList.RemoveRange(0,2)
 
-     #we want to start grabbing items. first we grab the EFI version, aka Boot ROM version. We only want the last part, so
-     #we split on the colon, and grab the second part [1]
-     #this is actually now referred to as the System Firmware Version, so we'll rename that
-     $macInfoEFIVersion = $macInfoSystemProfilerArrayList[10].Split(":")[1]
+     ###Here is the first place where we have to account for Apple Silicon vs Intel
 
-     #now we trim the leading space. If we don't put anything in the parens, it just yoinks the first character
-     $macInfoEFIVersion = $macInfoEFIVersion.TrimStart()
+     #Apple Silicon Section
+     if($isAppleSilicon) {
+          #getthe System Firmware Version
+          $macInfoEFIVersion = $macInfoSystemProfilerArrayList[6].Split(":")[1]
+          $macInfoEFIVersion = $macInfoEFIVersion.TrimStart()
 
-     #smc version
-     #now the OS Loader version
-     $macInfoSMCVersion = $macInfoSystemProfilerArrayList[11].Split(":")[1]
-     $macInfoSMCVersion = $macInfoSMCVersion.TrimStart()
+          #Get the OS Loader Version
+          $macInfoSMCVersion = $macInfoSystemProfilerArrayList[7].Split(":")[1]
+          $macInfoSMCVersion = $macInfoEFIVersion.TrimStart()
 
-     #hardware serial number
-     $macInfoHardwareSN = $macInfoSystemProfilerArrayList[12].Split(":")[1]
-     $macInfoHardwareSN = $macInfoHardwareSN.TrimStart()
+          #hardware serial number
+          $macInfoHardwareSN = $macInfoSystemProfilerArrayList[8].Split(":")[1]
+          $macInfoHardwareSN = $macInfoHardwareSN.TrimStart()
 
-     #hardware UUID
-     $macInfoHardwareUUID = $macInfoSystemProfilerArrayList[13].Split(":")[1]
-     $macInfoHardwareUUID = $macInfoHardwareUUID.TrimStart()
+          #hardware UUID
+          $macInfoHardwareUUID = $macInfoSystemProfilerArrayList[9].Split(":")[1]
+          $macInfoHardwareUUID = $macInfoHardwareUUID.TrimStart()
 
-     #provisioning UUID
-     $macInfoProvisioningUDID = $macInfoSystemProfilerArrayList[14].Split(":")[1]
-     $macInfoProvisioningUDID = $macInfoProvisioningUDID.TrimStart()
+          #provisioning UUID
+          $macInfoProvisioningUDID = $macInfoSystemProfilerArrayList[10].Split(":")[1]
+          $macInfoProvisioningUDID = $macInfoProvisioningUDID.TrimStart()
 
-     #activation Lock status
-     $macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[15].Split(":")[1]
-     $macInfoActivationLockStatus = $macInfoActivationLockStatus.TrimStart()
+          #activation Lock status
+          $macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[11].Split(":")[1]
+          $macInfoActivationLockStatus = $macInfoActivationLockStatus.TrimStart()
 
-     #model name
-     $macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1]
-     $macInfoModelName = $macInfoModelName.TrimStart()
+          #model name
+          $macInfoModelName = $macInfoSystemProfilerArrayList[1].Split(":")[1]
+          $macInfoModelName = $macInfoModelName.TrimStart()
 
-     #model Identfier
-     $macInfoModelID = $macInfoSystemProfilerArrayList[1].Split(":")[1]
-     $macInfoModelID = $macInfoModelID.TrimStart()
+          #model Identfier
+          $macInfoModelID = $macInfoSystemProfilerArrayList[2].Split(":")[1]
+          $macInfoModelID = $macInfoModelID.TrimStart()
 
-     #CPU Model
-     $macInfoCPUName = $macInfoSystemProfilerArrayList[2].Split(":")[1]
-     $macInfoCPUName = $macInfoCPUName.TrimStart()
+          #CPU Model
+          $macInfoCPUName = $macInfoSystemProfilerArrayList[3].Split(":")[1]
+          $macInfoCPUName = $macInfoCPUName.TrimStart()
 
-     #CPU Speed
-     $macInfoCPUSpeed = $macInfoSystemProfilerArrayList[3].Split(":")[1]
-     $macInfoCPUSpeed = $macInfoCPUSpeed.TrimStart()
+          #core count
+          $macInfoCPUCoreCount = $macInfoSystemProfilerArrayList[4].Split(":")[1]
+          $macInfoCPUCoreCount = $macInfoCPUCoreCount.TrimStart()
 
-     # CPU Count
-     $macInfoCPUCount = $macInfoSystemProfilerArrayList[4].Split(":")[1]
-     $macInfoCPUCount = $macInfoCPUCount.TrimStart()
+          #RAM size
+          $macInfoRAMSize = $macInfoSystemProfilerArrayList[5].Split(":")[1]
+          $macInfoRAMSize = $macInfoRAMSize.TrimStart()
+     } else {
+          #we want to start grabbing items. first we grab the EFI version, aka Boot ROM version. We only want the last part, so
+          #we split on the colon, and grab the second part [1]
+          #this is actually now referred to as the System Firmware Version, so we'll rename that
+          $macInfoEFIVersion = $macInfoSystemProfilerArrayList[10].Split(":")[1]
 
-     #core count
-     $macInfoCPUCoreCount = $macInfoSystemProfilerArrayList[5].Split(":")[1]
-     $macInfoCPUCoreCount = $macInfoCPUCoreCount.TrimStart()
+          #now we trim the leading space. If we don't put anything in the parens, it just yoinks the first character
+          $macInfoEFIVersion = $macInfoEFIVersion.TrimStart()
 
-     #L2 Cache Size
-     $macInfoCPUL2CacheSize = $macInfoSystemProfilerArrayList[6].Split(":")[1]
-     $macInfoCPUL2CacheSize = $macInfoCPUL2CacheSize.TrimStart()
+          #smc version
+          #now the OS Loader version
+          $macInfoSMCVersion = $macInfoSystemProfilerArrayList[11].Split(":")[1]
+          $macInfoSMCVersion = $macInfoSMCVersion.TrimStart()
 
-     #L3 Cache size
-     $macInfoL3CacheSize = $macInfoSystemProfilerArrayList[7].Split(":")[1]
-     $macInfoL3CacheSize = $macInfoL3CacheSize.TrimStart()
+          #hardware serial number
+          $macInfoHardwareSN = $macInfoSystemProfilerArrayList[12].Split(":")[1]
+          $macInfoHardwareSN = $macInfoHardwareSN.TrimStart()
 
-     #hyperthreading status
-     $macInfoHyperThreadingEnabled = $macInfoSystemProfilerArrayList[8].Split(":")[1]
-     $macInfoHyperThreadingEnabled = $macInfoHyperThreadingEnabled.TrimStart()
-     
-     #RAM size
-     $macInfoRAMSize = $macInfoSystemProfilerArrayList[9].Split(":")[1]
-     $macInfoRAMSize = $macInfoRAMSize.TrimStart()
+          #hardware UUID
+          $macInfoHardwareUUID = $macInfoSystemProfilerArrayList[13].Split(":")[1]
+          $macInfoHardwareUUID = $macInfoHardwareUUID.TrimStart()
+
+          #provisioning UUID
+          $macInfoProvisioningUDID = $macInfoSystemProfilerArrayList[14].Split(":")[1]
+          $macInfoProvisioningUDID = $macInfoProvisioningUDID.TrimStart()
+
+          #activation Lock status
+          $macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[15].Split(":")[1]
+          $macInfoActivationLockStatus = $macInfoActivationLockStatus.TrimStart()
+
+          #model name
+          $macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1]
+          $macInfoModelName = $macInfoModelName.TrimStart()
+
+          #model Identfier
+          $macInfoModelID = $macInfoSystemProfilerArrayList[1].Split(":")[1]
+          $macInfoModelID = $macInfoModelID.TrimStart()
+
+          #CPU Model
+          $macInfoCPUName = $macInfoSystemProfilerArrayList[2].Split(":")[1]
+          $macInfoCPUName = $macInfoCPUName.TrimStart()
+
+          #CPU Speed
+          $macInfoCPUSpeed = $macInfoSystemProfilerArrayList[3].Split(":")[1]
+          $macInfoCPUSpeed = $macInfoCPUSpeed.TrimStart()
+
+          # CPU Count
+          $macInfoCPUCount = $macInfoSystemProfilerArrayList[4].Split(":")[1]
+          $macInfoCPUCount = $macInfoCPUCount.TrimStart()
+
+          #core count
+          $macInfoCPUCoreCount = $macInfoSystemProfilerArrayList[5].Split(":")[1]
+          $macInfoCPUCoreCount = $macInfoCPUCoreCount.TrimStart()
+
+          #L2 Cache Size
+          $macInfoCPUL2CacheSize = $macInfoSystemProfilerArrayList[6].Split(":")[1]
+          $macInfoCPUL2CacheSize = $macInfoCPUL2CacheSize.TrimStart()
+
+          #L3 Cache size
+          $macInfoL3CacheSize = $macInfoSystemProfilerArrayList[7].Split(":")[1]
+          $macInfoL3CacheSize = $macInfoL3CacheSize.TrimStart()
+
+          #hyperthreading status
+          $macInfoHyperThreadingEnabled = $macInfoSystemProfilerArrayList[8].Split(":")[1]
+          $macInfoHyperThreadingEnabled = $macInfoHyperThreadingEnabled.TrimStart()
+          
+          #RAM size
+          $macInfoRAMSize = $macInfoSystemProfilerArrayList[9].Split(":")[1]
+          $macInfoRAMSize = $macInfoRAMSize.TrimStart()
+     }
+
+    
 
      #sysctl section===============================================================================
      $macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
@@ -252,11 +321,14 @@ function Get-MacInfo {
      #get UTC offset
      $macInfoUTCOffset = (Get-TimeZone).BaseUTCOffset
 
-     #filevault status
-     $macInfoFileVaultStatus = Invoke-Expression -Command "/usr/bin/fdesetup status"
-     ##get last word of return
-     $macInfoFileVaultStatus = $macInfoFileVaultStatus.Split(" ")[-1]
-     ##trim trailing period
+     ##filevault status
+     #changed this to allow for multiline entries that can happen, all we care about for this is if FV is on
+     $macInfoFileVaultTemp = Invoke-Expression -Command "/usr/bin/fdesetup status"
+     #shove into array because multiline
+     $macInfoFileVaultStatusArray = $macInfoFileVaultTemp.Split([Environment]::NewLine,$darwinVersionSplitOptions)
+     #get last word of return of first line of array which has on/off
+     $macInfoFileVaultStatus = $macInfoFileVaultStatusArray[0].Split(" ")[-1]
+     #trim trailing period
      $macInfoFileVaultStatus = $macInfoFileVaultStatus.TrimEnd(".")
 
      #DNS host name
@@ -302,61 +374,118 @@ function Get-MacInfo {
      ## now pull out days.hours:minutes:seconds
      $macInfoUptime = $macInfoUptime -join " "
 
+     ##test for apple sillcon here as well
+     if($isAppleSilicon) {
+          #into the (Apple Silcon) hashtable with you!
+          $macInfoHash.Add("macOSBuildLabEx", $mainDarwinKernelVersion)
 
-     #into the hashtable with you!
-     $macInfoHash.Add("macOSBuildLabEx", $mainDarwinKernelVersion)
+          $macInfoHash.Add("macOSCurrentVersion", $macInfoOSVersion)
+          $macInfoHash.Add("macOSCurrentBuildNumber", $macInfoOSBuildNumber)
+          $macInfoHash.Add("macOSProductName", $macInfoOSName)
 
-     $macInfoHash.Add("macOSCurrentVersion", $macInfoOSVersion)
-     $macInfoHash.Add("macOSCurrentBuildNumber", $macInfoOSBuildNumber)
-     $macInfoHash.Add("macOSProductName", $macInfoOSName)
-
-     $macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
-
-
-     $macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
-     $macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
-     $macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
-     $macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
-     $macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
-
-     $macInfoHash.Add("HardwareModelName", $macInfoModelName)
-     $macInfoHash.Add("HardwareModelID", $macInfoModelID)
-     $macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
-
-     $macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
-     $macInfoHash.Add("CPUName" , $macInfoCPUName)
-     $macInfoHash.Add("CPUSpeed", $macInfoCPUSpeed)
-     $macInfoHash.Add("CPUCount", $macInfoCPUCount)
-     $macInfoHash.Add("CPUCoreCount", $macInfoCPUCoreCount)
-     $macInfoHash.Add("CPUL2CacheSize", $macInfoCPUL2CacheSize)
-     $macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
-     $macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize)
-     $macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled)
-     $macInfoHash.Add("RAMAmount", $macInfoRAMSize)
+          $macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
 
 
-     $macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
-     $macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
-     $macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
+          $macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
+          $macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
+          $macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
+          $macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
+          $macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
 
-     $macInfoHash.Add("BootDevice", $macInfoBootDevice)
-     $macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
+          $macInfoHash.Add("HardwareModelName", $macInfoModelName)
+          $macInfoHash.Add("HardwareModelID", $macInfoModelID)
+          $macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
 
-     $macInfoHash.Add("EFICurrentLanguage", $macInfoEFILanguage)
-     $macInfoHash.Add("DSTStatus", $macInfoDSTStatus)
-     $macInfoHash.Add("TimeZone", $macInfoTimeZone)
-     $macInfoHash.Add("UTCOffset", $macInfoUTCOffset)
+          $macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
+          $macInfoHash.Add("CPUName" , $macInfoCPUName)
+          $macInfoHash.Add("CPUSpeed", "Not applicable to Apple Silicon")
+          $macInfoHash.Add("CPUCount", "Not applicable to Apple Silicon")
+          $macInfoHash.Add("CPUCoreCount", $macInfoCPUCoreCount)
+          $macInfoHash.Add("CPUL2CacheSize", "Not applicable to Apple Silicon")
+          $macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
+          $macInfoHash.Add("L3CacheSize", "Not applicable to Apple Silicon")
+          $macInfoHash.Add("HyperThreadingEnabled", "Not applicable to Apple Silicon")
+          $macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 
-     $macInfoHash.Add("DNSHostName", $macInfoDNSHostName)
-     $macInfoHash.Add("LocalHostName", $macInfoLocalHostName)
-     $macInfoHash.Add("NetworkServiceList", $macInfoNICList)
 
-     $macInfoHash.Add("CurrentUserName", $macInfoShortUserName)
-     $macInfoHash.Add("CurrentUserUID", $macInfoUID)
+          $macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
+          $macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
+          $macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
 
-     $macInfoHash.Add("CurrentDateTime", $macInfoCurrentDate)
-     $macInfoHash.Add("LastBootDateTime", $macInfoLastBoot)
-     $macInfoHash.Add("Uptime", $macInfoUptime)
+          $macInfoHash.Add("BootDevice", $macInfoBootDevice)
+          $macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
+
+          $macInfoHash.Add("EFICurrentLanguage", $macInfoEFILanguage)
+          $macInfoHash.Add("DSTStatus", $macInfoDSTStatus)
+          $macInfoHash.Add("TimeZone", $macInfoTimeZone)
+          $macInfoHash.Add("UTCOffset", $macInfoUTCOffset)
+
+          $macInfoHash.Add("DNSHostName", $macInfoDNSHostName)
+          $macInfoHash.Add("LocalHostName", $macInfoLocalHostName)
+          $macInfoHash.Add("NetworkServiceList", $macInfoNICList)
+
+          $macInfoHash.Add("CurrentUserName", $macInfoShortUserName)
+          $macInfoHash.Add("CurrentUserUID", $macInfoUID)
+
+          $macInfoHash.Add("CurrentDateTime", $macInfoCurrentDate)
+          $macInfoHash.Add("LastBootDateTime", $macInfoLastBoot)
+          $macInfoHash.Add("Uptime", $macInfoUptime)
+     } else {
+          #into the (Intel) hashtable with you!
+          $macInfoHash.Add("macOSBuildLabEx", $mainDarwinKernelVersion)
+
+          $macInfoHash.Add("macOSCurrentVersion", $macInfoOSVersion)
+          $macInfoHash.Add("macOSCurrentBuildNumber", $macInfoOSBuildNumber)
+          $macInfoHash.Add("macOSProductName", $macInfoOSName)
+
+          $macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
+
+
+          $macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
+          $macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
+          $macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
+          $macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
+          $macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
+
+          $macInfoHash.Add("HardwareModelName", $macInfoModelName)
+          $macInfoHash.Add("HardwareModelID", $macInfoModelID)
+          $macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
+
+          $macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
+          $macInfoHash.Add("CPUName" , $macInfoCPUName)
+          $macInfoHash.Add("CPUSpeed", $macInfoCPUSpeed)
+          $macInfoHash.Add("CPUCount", $macInfoCPUCount)
+          $macInfoHash.Add("CPUCoreCount", $macInfoCPUCoreCount)
+          $macInfoHash.Add("CPUL2CacheSize", $macInfoCPUL2CacheSize)
+          $macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
+          $macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize)
+          $macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled)
+          $macInfoHash.Add("RAMAmount", $macInfoRAMSize)
+
+
+          $macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
+          $macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
+          $macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
+
+          $macInfoHash.Add("BootDevice", $macInfoBootDevice)
+          $macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
+
+          $macInfoHash.Add("EFICurrentLanguage", $macInfoEFILanguage)
+          $macInfoHash.Add("DSTStatus", $macInfoDSTStatus)
+          $macInfoHash.Add("TimeZone", $macInfoTimeZone)
+          $macInfoHash.Add("UTCOffset", $macInfoUTCOffset)
+
+          $macInfoHash.Add("DNSHostName", $macInfoDNSHostName)
+          $macInfoHash.Add("LocalHostName", $macInfoLocalHostName)
+          $macInfoHash.Add("NetworkServiceList", $macInfoNICList)
+
+          $macInfoHash.Add("CurrentUserName", $macInfoShortUserName)
+          $macInfoHash.Add("CurrentUserUID", $macInfoUID)
+
+          $macInfoHash.Add("CurrentDateTime", $macInfoCurrentDate)
+          $macInfoHash.Add("LastBootDateTime", $macInfoLastBoot)
+          $macInfoHash.Add("Uptime", $macInfoUptime)
+     }
 
      #so we want the hashtable to be filled before we even care about what the person asked for. This is lazy as hell, to be sure, but,
      #it ensures that no matter what the parameter asks for, it will work. Also really, the entire thing takes just over a second to run,
