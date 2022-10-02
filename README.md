@@ -4,11 +4,7 @@ There are things that are in Get-Computerinfo that are not here, some because th
 
 This is pretty thoroughly commented, so if you read those, you should have a good idea of what is going on.
 
-<<<<<<< HEAD
 20221001 Added support for differences between Apple Silicon and Intel
-=======
-Added code for the differences between Apple Silicon and Intel
->>>>>>> b5e2457 (Apple silicon updates)
 
 This is pulling data from uname, sw_ver, system_profiler, osascript, sysctl, and a number of built-in powershell functions. Currently, the keys it has are:
 
@@ -44,7 +40,6 @@ CPUName
 
 CPUSpeed (Intel Only)
 
-<<<<<<< HEAD
 CPUCount  (Intel Only)
 
 CPUCoreCount
@@ -56,19 +51,6 @@ CPUBrandString
 L3CacheSize  (Intel Only)
 
 HyperThreadingEnabled  (Intel Only)
-=======
-CPUCount (Intel Only)
-
-CPUCoreCount
-
-CPUL2CacheSize (Intel Only)
-
-CPUBrandString
-
-L3CacheSize (Intel Only)
-
-HyperThreadingEnabled (Intel Only)
->>>>>>> b5e2457 (Apple silicon updates)
 
 RAMAmount
 
@@ -110,7 +92,6 @@ obviously, this list is expandable.
 
 20 May 2020 update added - Comment-based help (it's a bit odd, but it gives you an idea of what's going on) The ability to get one, some, or all the key/value pairs as a result Set up the hashtable as an ordered hashtable, so the output order for the full result makes a bit more sense in terms of grouping
 
-<<<<<<< HEAD
 20 May 2020 update
 added - 
   Comment-based help (it's a bit odd, but it gives you an idea of what's going on)
@@ -122,8 +103,6 @@ IT'S ALIVE! IT WORKS AS A MODULE!
 
 7 Mar 2022 update
 Edits to account for changes to system profiler output. Added Hyperthreading status, provisioningudid, activation lock status, renamed EFI to SystemFirmwareVersion and SMC to OSLoaderVersion
-=======
-27 May 2020 update IT'S ALIVE! IT WORKS AS A MODULE!
 
-7 Mar 2022 update Edits to account for changes to system profiler output. Added Hyperthreading status, provisioningudid, activation lock status, renamed EFI to SystemFirmwareVersion and SMC to OSLoaderVersion
->>>>>>> f2c2fee (First changes for apple silicon)
+1 Oct 2022 update
+Added first attempt at Apple Silicon
