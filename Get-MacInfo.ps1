@@ -34,13 +34,8 @@ CPUCount (Intel Only)
 CPUCoreCount
 CPUL2CacheSize (Intel Only)
 CPUBrandString
-<<<<<<< HEAD
 L3CacheSize
 HyperThreadingEnabled
-=======
-L3CacheSize (Intel Only)
-HyperthreadingEnabled (Intel Only)
->>>>>>> cbb1d8f (First updates for Apple Silicon)
 RAMAmount
 AppMemoryUsedGB
 VMPageFile
