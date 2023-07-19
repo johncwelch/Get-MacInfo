@@ -35,7 +35,7 @@ CPUCoreCount
 CPUL2CacheSize (Intel Only)
 CPUBrandString
 L3CacheSize
-HyperThreadingEnabled
+Clear-ItemHyperThreadingEnabled
 RAMAmount
 AppMemoryUsedGB
 VMPageFile
