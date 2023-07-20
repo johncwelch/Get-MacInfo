@@ -44,6 +44,7 @@ VMPageFile
 VMSwapInUseGB
 BootDevice
 FileVaultStatus
+SIPStatus
 EFICurrentLanguage
 DSTStatus
 TimeZone
@@ -376,6 +377,13 @@ function Get-MacInfo {
      ## now pull out days.hours:minutes:seconds
      $macInfoUptime = $macInfoUptime -join " "
 
+     ##Get SIP status
+     $csrutilOutput = (Invoke-Expression -Command "/usr/bin/csrutil status").Split(":")
+     #remove the leading space in the status
+     $csrutilStatus = $csrutilOutput[1].Substring(1)
+     #remove the trailing period
+     $csrutilStatus = $csrutilStatus.Substring(0,$csrutilStatus.Length-1)
+
      ##test for apple sillcon here as well
      if($isAppleSilicon) {
           #into the (Apple Silcon) hashtable with you!
@@ -416,6 +424,7 @@ function Get-MacInfo {
 
           $macInfoHash.Add("BootDevice", $macInfoBootDevice)
           $macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
+          $macInfoHash.Add("SIPStatus", $csrutilStatus)
 
           $macInfoHash.Add("EFICurrentLanguage", $macInfoEFILanguage)
           $macInfoHash.Add("DSTStatus", $macInfoDSTStatus)
@@ -471,6 +480,7 @@ function Get-MacInfo {
 
           $macInfoHash.Add("BootDevice", $macInfoBootDevice)
           $macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
+          $macInfoHash.Add("SIPStatus", $csrutilStatus)
 
           $macInfoHash.Add("EFICurrentLanguage", $macInfoEFILanguage)
           $macInfoHash.Add("DSTStatus", $macInfoDSTStatus)
