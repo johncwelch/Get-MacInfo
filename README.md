@@ -64,6 +64,8 @@ BootDevice
 
 FileVaultStatus
 
+SIPStatus
+
 EFICurrentLanguage
 
 DSTStatus
@@ -106,3 +108,6 @@ Edits to account for changes to system profiler output. Added Hyperthreading sta
 
 1 Oct 2022 update
 Added first attempt at Apple Silicon
+
+20 July 2023 update
+Added SIP status
