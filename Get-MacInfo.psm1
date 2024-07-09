@@ -219,6 +219,12 @@ function Get-MacInfo {
           #now we trim the leading space. If we don't put anything in the parens, it just yoinks the first character
           $macInfoEFIVersion = $macInfoEFIVersion.TrimStart()
 
+          #T2 Firmware Version
+          $macInfoT2FirmwareVersion = $macInfoSystemProfilerArrayList[10].Split("(")[1]
+          $macInfoT2FirmwareVersion = $macInfoT2FirmwareVersion.Split(":")[1]
+          $macInfoT2FirmwareVersion = $macInfoT2FirmwareVersion.TrimStart()
+          $macInfoT2FirmwareVersion = $macInfoT2FirmwareVersion.Substring(0,$macInfoT2FirmwareVersion.Length-1)
+
           #smc version
           #now the OS Loader version
           $macInfoSMCVersion = $macInfoSystemProfilerArrayList[11].Split(":")[1]
@@ -453,6 +459,7 @@ function Get-MacInfo {
 
 
           $macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
+          $macInfoHash.Add("T2FirmwareVersion", $macInfoT2FirmwareVersion)
           $macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
           $macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
           $macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
