@@ -13,7 +13,7 @@
     RootModule = 'Get-MacInfo.psm1'
     
     # Version number of this module.
-    ModuleVersion = '1.0'
+    ModuleVersion = '1.1'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -108,7 +108,7 @@
             # IconUri = ''
     
             # ReleaseNotes of this module
-            ReleaseNotes = 'First module release'
+            ReleaseNotes = 'Initial Apple Silicon Update'
     
             # Prerelease string of this module
             # Prerelease = ''
