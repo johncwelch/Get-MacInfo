@@ -22,6 +22,7 @@ macOSCurrentBuildNumber
 macOSProductName
 macOSDarwinVersion
 SystemFirmwareVersion
+T2FirmwareVersion
 OSLoaderVersion
 HardwareSerialNumber
 HardwareUUID
