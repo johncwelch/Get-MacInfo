@@ -217,8 +217,12 @@ function Get-MacInfo {
           #this is actually now referred to as the System Firmware Version, so we'll rename that
           $macInfoEFIVersion = $macInfoSystemProfilerArrayList[10].Split(":")[1]
 
-          #now we trim the leading space. If we don't put anything in the parens, it just yoinks the first character
-          $macInfoEFIVersion = $macInfoEFIVersion.TrimStart()
+          #now we trim all leading and trailing whitespace
+          $macInfoEFIVersion = $macInfoEFIVersion.Trim()
+		#split on the parens and grab the first entry to get rid of the ibridge stuff
+		$macInfoEFIVersion = $macInfoEFIVersion.Split("(")[0]
+		#get ride of any remaining whitespace
+		$macInfoEFIVersion = $macInfoEFIVersion.Trim()
 
           #T2 Firmware Version
           $macInfoT2FirmwareVersion = $macInfoSystemProfilerArrayList[10].Split("(")[1]
