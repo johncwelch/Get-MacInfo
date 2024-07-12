@@ -365,6 +365,30 @@ function Get-MacInfo {
 	#get vendor ID
 	$blueToothVendorID = $blueToothArrayList[7].Split(":")[1].Trim()
 
+	#POST test section============================================================================
+	#get the POST data
+	$POSTInfoRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPDiagnosticsDataType"
+
+	#shove into an array list
+	[System.Collections.ArrayList]$POSTInfoArrayList = $POSTInfoRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
+
+	#remove the first two lines
+	$POSTInfoArrayList.RemoveRange(0,2)
+
+	#trim leading/trailing whitespace from the first entry (date & time)
+	$POSTInfoArrayList[0] = $POSTInfoArrayList[0].Trim()
+
+	#split the date & time on space, this gives us 4 entries
+	[System.Collections.ArrayList]$POSTInfoRunDateArrayList = $POSTInfoArrayList[0].Split(" ")
+
+	#delete the first two entries
+	$POSTInfoRunDateArrayList.RemoveRange(0,2)
+
+	#now build a date & time string with ONLY the date and time
+	$POSTInfoLastRunDate = $POSTInfoRunDateArrayList[0] + " " + $POSTInfoRunDateArrayList[1]
+
+	#now get the last run results
+	$POSTInfoLastRunResults = $POSTInfoArrayList[1].Split(":")[1].Trim()
 
 	#sysctl section===============================================================================
 	$macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
@@ -528,24 +552,24 @@ function Get-MacInfo {
 	} else {
 		#into the (Intel) hashtable with you!
 		$macInfoHash.Add("macOSBuildLabEx", $mainDarwinKernelVersion)
-
+		$macInfoHash.Add(" "," ")
 		$macInfoHash.Add("macOSCurrentVersion", $macInfoOSVersion)
 		$macInfoHash.Add("macOSCurrentBuildNumber", $macInfoOSBuildNumber)
 		$macInfoHash.Add("macOSProductName", $macInfoOSName)
-
+		$macInfoHash.Add("  "," ")
 		$macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
-
+		$macInfoHash.Add("   "," ")
 		$macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
 		$macInfoHash.Add("T2FirmwareVersion", $macInfoT2FirmwareVersion)
 		$macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
 		$macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
 		$macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
 		$macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
-
+		$macInfoHash.Add("    "," ")
 		$macInfoHash.Add("HardwareModelName", $macInfoModelName)
 		$macInfoHash.Add("HardwareModelID", $macInfoModelID)
 		$macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
-
+		$macInfoHash.Add("     "," ")
 		$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
 		$macInfoHash.Add("CPUName" , $macInfoCPUName)
 		$macInfoHash.Add("CPUSpeed", $macInfoCPUSpeed)
@@ -556,7 +580,7 @@ function Get-MacInfo {
 		$macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize)
 		$macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled)
 		$macInfoHash.Add("RAMAmount", $macInfoRAMSize)
-
+		$macInfoHash.Add("      "," ")
 		$macInfoHash.Add("ApplePayPlatformID", $applePayInfoPlatformID)
 		$macInfoHash.Add("ApplePaySEID", $applePayInfoSEID)
 		$macInfoHash.Add("ApplePayHardware", $applePayInfoHardware)
@@ -565,7 +589,7 @@ function Get-MacInfo {
 		$macInfoHash.Add("ApplePayControllerHardwareVersion", $applePayControllerHardwareVersion)
 		$macInfoHash.Add("ApplePayControllerFirmwareVersion", $applePayControllerFirmwareVersion)
 		$macInfoHash.Add("ApplePayControllerMiddlewareVersion", $applePayControllerMiddlewareVersion)
-
+		$macInfoHash.Add("       "," ")
 		$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
 		$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
 		$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
@@ -574,11 +598,14 @@ function Get-MacInfo {
 		$macInfoHash.Add("BluetoothTransport",$blueToothTransport)
 		$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
 		$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
-
+		$macInfoHash.Add("        "," ")
+		$macInfoHash.Add("POSTLastRunDate",$POSTInfoLastRunDate)
+		$macInfoHash.Add("POSTLastRunResults",$POSTInfoLastRunResults)
+		$macInfoHash.Add("         "," ")
 		$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
 		$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
 		$macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
-
+		
 		$macInfoHash.Add("BootDevice", $macInfoBootDevice)
 		$macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
 		$macInfoHash.Add("SIPStatus", $csrutilStatus)
