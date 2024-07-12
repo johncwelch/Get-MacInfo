@@ -143,7 +143,7 @@ function Get-MacInfo {
 
 	#system_profiler section=========================================================
 
-	#now, let's get our system_profiler info
+	#now, let's get our system_profiler hardware info
 	$macInfoSystemProfilerRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType"
 
 	##Apple Silicon Differences
@@ -270,7 +270,41 @@ function Get-MacInfo {
 		$macInfoRAMSize = $macInfoSystemProfilerArrayList[9].Split(":")[1].Trim()
 	}
 
-    
+	#apple pay info===============================================================================
+	#get the applepay info from system profiler
+	$applePayInfoArrayRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPSecureElementDataType"
+
+	#shove into an arraylist, remove all the blank lines 
+	[System.Collections.ArrayList]$applePayInfoArrayList = $applePayInfoArrayRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
+
+	#remove the first two lines that only say "Apple Pay"
+	$applePayInfoArrayList.RemoveRange(0,2)
+
+	#grab the platform ID line, item[0] split it on the :, grab the second element [1]
+	#trim all leading/trailing whitespace from element[1]
+	$applePayInfoPlatformID = $applePayInfoArrayList[0].Split(":")[1].Trim()
+
+	#get the SEID the same way
+	$applePayInfoSEID = $applePayInfoArrayList[1].Split(":")[1].Trim()
+
+	#Hardware
+	$applePayInfoHardware = $applePayInfoArrayList[5].Split(":")[1].Trim()
+
+	#firmware
+	$applePayInfoFirmware = $applePayInfoArrayList[6].Split(":")[1].Trim()
+
+	#JCOP OS version
+	$applePayInfoJCOPOSVersion = $applePayInfoArrayList[7].Split(":")[1].Trim()
+
+	##Apple Pay Controller Info
+	#hardware version
+	$applePayControllerHardwareVersion = $applePayInfoArrayList[9].Split(":")[1].Trim()
+
+	#firmware version
+	$applePayControllerFirmwareVersion = $applePayInfoArrayList[10].Split(":")[1].Trim()
+
+	#middleWare version
+	$applePayControllerMiddlewareVersion = $applePayInfoArrayList[11].Split(":")[1].Trim()
 
 	#sysctl section===============================================================================
 	$macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
@@ -439,7 +473,6 @@ function Get-MacInfo {
 
 		$macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
 
-
 		$macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
 		$macInfoHash.Add("T2FirmwareVersion", $macInfoT2FirmwareVersion)
 		$macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
@@ -462,6 +495,14 @@ function Get-MacInfo {
 		$macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled)
 		$macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 
+		$macInfoHash.Add("ApplePayPlatformID", $applePayInfoPlatformID)
+		$macInfoHash.Add("ApplePaySEID", $applePayInfoSEID)
+		$macInfoHash.Add("ApplePayHardware", $applePayInfoHardware)
+		$macInfoHash.Add("ApplePayFirmware", $applePayInfoFirmware)
+		$macInfoHash.Add("ApplePayJCOPOSVersion", $applePayInfoJCOPOSVersion)
+		$macInfoHash.Add("ApplePayControllerHardwareVersion", $applePayControllerHardwareVersion)
+		$macInfoHash.Add("ApplePayControllerFirmwareVersion", $applePayControllerFirmwareVersion)
+		$macInfoHash.Add("ApplePayControllerMiddlewareVersion", $applePayControllerMiddlewareVersion)
 
 		$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
 		$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
