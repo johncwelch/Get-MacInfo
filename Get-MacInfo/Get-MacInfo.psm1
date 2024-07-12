@@ -545,8 +545,8 @@ function Get-MacInfo {
           foreach ($key in $keys) {
                $theValue = $macInfoHash.$key
                "{0,-30}{1,-100}" -f $key,$theValue
+          }
      }
-}
 }
 
 Export-ModuleMember -Function Get-MacInfo
