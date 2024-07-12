@@ -74,6 +74,17 @@ This can be used as a Powershell module or as a standalone script.
 .LINK
 https://github.com/johncwelch/Get-MacInfo
 #>
+
+## To do:
+	#app-sso output
+	#system_profiler SPSecureElementDataType (apple pay), get
+		#firmware
+		#JCOP OS
+		#controller hardware
+		#controller firmware
+		#controller middleware
+	#SPAudioDataType
+		#list the 
 function Get-MacInfo {
      #input parameter line, has to be the first executable line in the script
      param ($keys)
