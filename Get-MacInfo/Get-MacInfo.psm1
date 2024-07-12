@@ -271,6 +271,7 @@ function Get-MacInfo {
 	}
 
 	#apple pay info===============================================================================
+
 	#get the applepay info from system profiler
 	$applePayInfoArrayRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPSecureElementDataType"
 
@@ -305,6 +306,65 @@ function Get-MacInfo {
 
 	#middleWare version
 	$applePayControllerMiddlewareVersion = $applePayInfoArrayList[11].Split(":")[1].Trim()
+
+	#bluetooth info===============================================================================
+	#get the applepay info from system profiler
+	$blueToothRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPBluetoothDataType"
+
+	#shove into an arraylist, remove all the blank lines 
+	[System.Collections.ArrayList]$blueToothArrayList = $blueToothRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
+
+	#remove the first two lines
+	$blueToothArrayList.RemoveRange(0,2)
+
+	#since the BluetoothMAC is colon-delimited, we can't just split on colons like usual
+	#in this case, we're going to blank the leading spaces, then trim on the middle space
+	#blank the leading spaces
+	$blueToothMAC = $blueToothArrayList[0].TrimStart()
+
+	#split on the only remaining space, grab the second element, [1] and remove its whitespace
+	$blueToothMAC = $blueToothMAC.Split(" ")[1].Trim()
+
+	#get the BT chipset
+	$blueToothChipset = $blueToothArrayList[2].Split(":")[1].Trim()
+
+	#get discoverable status
+	$blueToothDiscoverable = $blueToothArrayList[3].Split(":")[1].Trim()
+
+	#get firmware version
+	$bluetoothFirmwareVersion = $blueToothArrayList[4].Split(":")[1].Trim()
+
+	#supported services end up being weird
+	$bluetoothSupportedServicesRaw = $blueToothArrayList[5].Split(":")[1].Trim()
+
+	#build an arraylist to contain all the services
+	[System.Collections.ArrayList]$bluetoothSupportedServices = @()
+	#get the first item
+	$bluetoothSupportedServices.Add($bluetoothSupportedServicesRaw.Split("<")[0].Trim())|Out-Null
+
+	#now we get the other half of the string
+	$blueToothTemp = $bluetoothSupportedServicesRaw.Split("<")[1].Trim()
+
+	#trim the trailing >
+	$blueToothTemp = $blueToothTemp.Substring(0,$blueToothTemp.Length-1)
+
+	#yeet any leading/trailing whitespace
+	$blueToothTemp = $blueToothTemp.Trim()
+
+	#create a temp array for the other services
+	$blueToothTempArray = $blueToothTemp.Split(" ")
+
+	#add them onto the backend of the arraylist which we can then shove in the hashlist
+	foreach($item in $blueToothTempArray){
+		$bluetoothSupportedServices.Add($item)|Out-Null
+	}
+
+	#get traansport
+	$blueToothTransport = $blueToothArrayList[6].Split(":")[1].Trim()
+
+	#get vendor ID
+	$blueToothVendorID = $blueToothArrayList[7].Split(":")[1].Trim()
+
 
 	#sysctl section===============================================================================
 	$macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
@@ -365,15 +425,17 @@ function Get-MacInfo {
 	#get a list of network services. This takes a few steps. First, get the list and put it into an array
 	##this does a lot of things. It runs the networksetup - listallnetworkservices, then splits that output into an array,
 	##one entry per line and removes blank lines
+	#set it up as an arraylist
+	[System.Collections.ArrayList]$macInfoNICList = @()
+
+	#grab the NIC list and shove them into the array list
 	$macInfoNICList = (Invoke-Expression -Command "/usr/sbin/networksetup -listallnetworkservices").Split([Environment]::NewLine,[System.StringSplitOptions]::RemoveEmptyEntries)
 
 	##now we remove the first line, which is unnecessary for our needs
 	##and yes, i know this is not technically a nic list, but it will work for our needs
 	##and it grabs services that don't have ports that -listallhardwareports would have, like iPhone USB
-	$macInfoNICList = $macInfoNICList[1..($macInfoNICList.length - 1)]
+	$macInfoNICList.RemoveAt(0)
 
-	##now, mung the array into a single string with a comma-space separating each entry
-	$macInfoNICList = $macInfoNICList -join ', ';
 
 	#using powershell -> bash -> applescript
 	#get current user name
@@ -503,6 +565,15 @@ function Get-MacInfo {
 		$macInfoHash.Add("ApplePayControllerHardwareVersion", $applePayControllerHardwareVersion)
 		$macInfoHash.Add("ApplePayControllerFirmwareVersion", $applePayControllerFirmwareVersion)
 		$macInfoHash.Add("ApplePayControllerMiddlewareVersion", $applePayControllerMiddlewareVersion)
+
+		$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
+		$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
+		$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
+		$macInfoHash.Add("BluetoothFirmwareVersion",$bluetoothFirmwareVersion)
+		$macInfoHash.Add("BluetoothSupportedServices",$bluetoothSupportedServices)
+		$macInfoHash.Add("BluetoothTransport",$blueToothTransport)
+		$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
+		$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
 
 		$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
 		$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
