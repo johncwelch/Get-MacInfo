@@ -9,85 +9,69 @@ This is pretty thoroughly commented, so if you read those, you should have a goo
 This is pulling data from uname, sw_ver, system_profiler, osascript, sysctl, and a number of built-in powershell functions. Currently, the keys it has are:
 
 macOSBuildLabEx
-
 macOSCurrentVersion
-
 macOSCurrentBuildNumber
-
 macOSProductName
-
 macOSDarwinVersion
-
 SystemFirmwareVersion
-
+T2FirmwareVersion (currently Intel only as a separate thing in system profiler SPHardwareDataType)
 OSLoaderVersion
-
 HardwareSerialNumber
-
 HardwareUUID
-
 ProvisioningUDID
-
 HardwareModelName
-
 HardwareModelID
-
+HardwareModelNumber (Apple Silicon Only)
 ActivationLockStatus
-
 CPUArchitecture
-
 CPUName
-
 CPUSpeed (Intel Only)
-
-CPUCount  (Intel Only)
-
-CPUCoreCount
-
-CPUL2CacheSize  (Intel Only)
-
+CPUCount (Intel Only)
+CPUCoreCount (Intel Only)
+CPUTotalCoreCount (Apple Silicon Only)
+CPUPerformanceCoreCount (Apple Silicon Only)
+CPUEfficiencyCoreCount (Apple Silicon Only)
+CPUL2CacheSize (Intel Only)
 CPUBrandString
-
-L3CacheSize  (Intel Only)
-
-HyperThreadingEnabled  (Intel Only)
-
+L3CacheSize (Intel Only)
+HyperThreadingEnabled (Intel Only)
 RAMAmount
-
+ApplePayPlatformID
+ApplePaySEID
+ApplePaySystemOSSEID (Apple Silicon Only)
+ApplePayHardware
+ApplePayFirmware
+ApplePayJCOPOSVersion
+ApplePayControllerHardwareVersion
+ApplePayControllerFirmwareVersion
+ApplePayControllerMiddlewareVersion
+BluetoothMAC
+BluetoothChipset
+BluetoothDiscoverable
+BluetoothFirmwareVersion
+BluetoothProductID (Apple Silicon Only)
+BluetoothSupportedServices
+BluetoothTransport
+BluetoothVendorID
+POSTLastRunDate (Intel Only)
+POSTLastRunResults (Intel Only)
 AppMemoryUsedGB
-
 VMPageFile
-
 VMSwapInUseGB
-
 BootDevice
-
 FileVaultStatus
-
 SIPStatus
-
 EFICurrentLanguage
-
 DSTStatus
-
 TimeZone
-
 UTCOffset
-
 DNSHostName
-
 LocalHostName
-
 NetworkServiceList
-
 CurrentUserName
-
 CurrentUserUID
-
 CurrentDateTime
-
 LastBootDateTime
-
 Uptime
 
 obviously, this list is expandable.
@@ -111,3 +95,6 @@ Added first attempt at Apple Silicon
 
 20 July 2023 update
 Added SIP status
+
+13 July Update
+	added many things, apple pay, bluetooth, post test, formatted the output a bit better, it now works correctly for Apple Silicon...so many updates. There's also now a CHANGELOG file.
