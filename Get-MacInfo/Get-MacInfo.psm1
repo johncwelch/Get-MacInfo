@@ -605,23 +605,23 @@ function Get-MacInfo {
 		$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
 		$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
 		$macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
-		
+		$macInfoHash.Add("          "," ")
 		$macInfoHash.Add("BootDevice", $macInfoBootDevice)
 		$macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
 		$macInfoHash.Add("SIPStatus", $csrutilStatus)
-
+		$macInfoHash.Add("           "," ")
 		$macInfoHash.Add("EFICurrentLanguage", $macInfoEFILanguage)
 		$macInfoHash.Add("DSTStatus", $macInfoDSTStatus)
 		$macInfoHash.Add("TimeZone", $macInfoTimeZone)
 		$macInfoHash.Add("UTCOffset", $macInfoUTCOffset)
-
+		$macInfoHash.Add("            "," ")
 		$macInfoHash.Add("DNSHostName", $macInfoDNSHostName)
 		$macInfoHash.Add("LocalHostName", $macInfoLocalHostName)
 		$macInfoHash.Add("NetworkServiceList", $macInfoNICList)
-
+		$macInfoHash.Add("             "," ")
 		$macInfoHash.Add("CurrentUserName", $macInfoShortUserName)
 		$macInfoHash.Add("CurrentUserUID", $macInfoUID)
-
+		$macInfoHash.Add("              "," ")
 		$macInfoHash.Add("CurrentDateTime", $macInfoCurrentDate)
 		$macInfoHash.Add("LastBootDateTime", $macInfoLastBoot)
 		$macInfoHash.Add("Uptime", $macInfoUptime)
