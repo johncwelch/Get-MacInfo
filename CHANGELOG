@@ -4,4 +4,16 @@ We really need one of these now
 	added ApplePay info for Intel (will do same for Apple Silcon real soon, promise!)
 	added BlueTooth info for Intel
 	added POST test info for Intel
-	
+
+20240713 BIG APPLE SILCON CLEANUP
+	fixed model name, one off error on array, grabbing 1 instead of 0
+	same for macInfoModelID
+	added macInfoModelNumber (doesn't exist on intel in system profiler SPHardWareDataType)
+	split out apple silicon cores as total, performance, and efficiency
+	added apple pay for apple silicon
+	added bluetooth for Apple Silicon
+	There's no POST test entry in system profiler for Apple Silicon, so that's not there
+
+	may have to find a different way co calculate vm swap used
+
+	updated macInfoDNSHostNameTest to allow for null return when not set

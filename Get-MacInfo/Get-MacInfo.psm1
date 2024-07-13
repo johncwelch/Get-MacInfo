@@ -192,16 +192,32 @@ function Get-MacInfo {
 		$macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[11].Split(":")[1].Trim()
 
 		#model name
-		$macInfoModelName = $macInfoSystemProfilerArrayList[1].Split(":")[1].Trim()
+		$macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1].Trim()
 
 		#model Identfier
-		$macInfoModelID = $macInfoSystemProfilerArrayList[2].Split(":")[1].Trim()
+		$macInfoModelID = $macInfoSystemProfilerArrayList[1].Split(":")[1].Trim()
+
+		#model number
+		$macInfoModelNumber = $macInfoSystemProfilerArrayList[2].Split(":")[1].Trim()
 
 		#CPU Model
 		$macInfoCPUName = $macInfoSystemProfilerArrayList[3].Split(":")[1].Trim()
 
-		#core count
+		#core count. We're going to split ito perf and efficiency
 		$macInfoCPUCoreCount = $macInfoSystemProfilerArrayList[4].Split(":")[1].Trim()
+
+		#list total cores
+		$macInfoCPUCoreCountTotal = $macInfoCPUCoreCount.Split(" ")[0]
+
+		#get Perf and efficiency cores
+		#strip of total core count and leading parens
+		$macInfoCPUCoreCountTemp = $macInfoCPUCoreCount.Split(" (")[1]
+		#strip trailing parens from temp
+		$macInfoCPUCoreCountTemp = $macInfoCPUCoreCountTemp.Substring(0,$macInfoCPUCoreCountTemp.Length-1)
+		#get performance cores
+		$macInfoCPUPerformanceCoreCount = $macInfoCPUCoreCountTemp.Split(" and ")[0]
+		#get efficiency cores
+		$macInfoCPUEfficiencyCoreCount = $macInfoCPUCoreCountTemp.Split(" and ")[1]
 
 		#RAM size
 		$macInfoRAMSize = $macInfoSystemProfilerArrayList[5].Split(":")[1].Trim()
@@ -288,27 +304,54 @@ function Get-MacInfo {
 	#get the SEID the same way
 	$applePayInfoSEID = $applePayInfoArrayList[1].Split(":")[1].Trim()
 
-	#Hardware
-	$applePayInfoHardware = $applePayInfoArrayList[5].Split(":")[1].Trim()
+	#get systemOS SEID, apple Silicon Only and other Apple Silicon specific changes in this one
+	if($isAppleSilicon) {
+		#apple Silicon Only
+		$applePayInfoSystemOSSEID = $applePayInfoArrayList[2].Split(":")[1].Trim()
 
-	#firmware
-	$applePayInfoFirmware = $applePayInfoArrayList[6].Split(":")[1].Trim()
+		#Hardware
+		$applePayInfoHardware = $applePayInfoArrayList[6].Split(":")[1].Trim()
 
-	#JCOP OS version
-	$applePayInfoJCOPOSVersion = $applePayInfoArrayList[7].Split(":")[1].Trim()
+		#firmware
+		$applePayInfoFirmware = $applePayInfoArrayList[7].Split(":")[1].Trim()
 
-	##Apple Pay Controller Info
-	#hardware version
-	$applePayControllerHardwareVersion = $applePayInfoArrayList[9].Split(":")[1].Trim()
+		#JCOP OS version
+		$applePayInfoJCOPOSVersion = $applePayInfoArrayList[8].Split(":")[1].Trim()
 
-	#firmware version
-	$applePayControllerFirmwareVersion = $applePayInfoArrayList[10].Split(":")[1].Trim()
+		##Apple Pay Controller Info
+		#hardware version
+		$applePayControllerHardwareVersion = $applePayInfoArrayList[10].Split(":")[1].Trim()
 
-	#middleWare version
-	$applePayControllerMiddlewareVersion = $applePayInfoArrayList[11].Split(":")[1].Trim()
+		#firmware version
+		$applePayControllerFirmwareVersion = $applePayInfoArrayList[11].Split(":")[1].Trim()
+
+		#middleWare version
+		$applePayControllerMiddlewareVersion = $applePayInfoArrayList[12].Split(":")[1].Trim()
+	} else {
+		#Intel versions
+		#Hardware
+		$applePayInfoHardware = $applePayInfoArrayList[5].Split(":")[1].Trim()
+
+		#firmware
+		$applePayInfoFirmware = $applePayInfoArrayList[6].Split(":")[1].Trim()
+
+		#JCOP OS version
+		$applePayInfoJCOPOSVersion = $applePayInfoArrayList[7].Split(":")[1].Trim()
+
+		##Apple Pay Controller Info
+		#hardware version
+		$applePayControllerHardwareVersion = $applePayInfoArrayList[9].Split(":")[1].Trim()
+
+		#firmware version
+		$applePayControllerFirmwareVersion = $applePayInfoArrayList[10].Split(":")[1].Trim()
+
+		#middleWare version
+		$applePayControllerMiddlewareVersion = $applePayInfoArrayList[11].Split(":")[1].Trim()
+	}	
 
 	#bluetooth info===============================================================================
 	#get the applepay info from system profiler
+	#Intel doesn't have the product ID
 	$blueToothRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPBluetoothDataType"
 
 	#shove into an arraylist, remove all the blank lines 
@@ -334,11 +377,37 @@ function Get-MacInfo {
 	#get firmware version
 	$bluetoothFirmwareVersion = $blueToothArrayList[4].Split(":")[1].Trim()
 
-	#supported services end up being weird
-	$bluetoothSupportedServicesRaw = $blueToothArrayList[5].Split(":")[1].Trim()
+	#start split between Apple Silicon and Intel
+	
 
+	if($isAppleSilicon) {
+		#product ID
+		$blueToothProductID = $blueToothArrayList[6].Split(":")[1].Trim()
+
+		#supported services end up being weird and Apple Silicon has a one-off difference thanks to product ID
+		$bluetoothSupportedServicesRaw = $blueToothArrayList[6].Split(":")[1].Trim()
+
+		#get transport
+		$blueToothTransport = $blueToothArrayList[7].Split(":")[1].Trim()
+
+		#get vendor ID
+		$blueToothVendorID = $blueToothArrayList[8].Split(":")[1].Trim()
+	
+	} else {
+		#supported services end up being weird and Apple Silicon has a one-off difference thanks to product ID
+		$bluetoothSupportedServicesRaw = $blueToothArrayList[5].Split(":")[1].Trim()
+
+		#get transport
+		$blueToothTransport = $blueToothArrayList[6].Split(":")[1].Trim()
+
+		#get vendor ID
+		$blueToothVendorID = $blueToothArrayList[7].Split(":")[1].Trim()
+	}
+
+	##for supported services, we only need the inital block in the if statement, all the rest can live outside
 	#build an arraylist to contain all the services
 	[System.Collections.ArrayList]$bluetoothSupportedServices = @()
+
 	#get the first item
 	$bluetoothSupportedServices.Add($bluetoothSupportedServicesRaw.Split("<")[0].Trim())|Out-Null
 
@@ -357,38 +426,35 @@ function Get-MacInfo {
 	#add them onto the backend of the arraylist which we can then shove in the hashlist
 	foreach($item in $blueToothTempArray){
 		$bluetoothSupportedServices.Add($item)|Out-Null
-	}
-
-	#get traansport
-	$blueToothTransport = $blueToothArrayList[6].Split(":")[1].Trim()
-
-	#get vendor ID
-	$blueToothVendorID = $blueToothArrayList[7].Split(":")[1].Trim()
+	}	
 
 	#POST test section============================================================================
-	#get the POST data
-	$POSTInfoRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPDiagnosticsDataType"
+	##Intel Only, the datatype returns nothing on Apple Silicon
+	if(-not $isAppleSilicon) {
+		#get the POST data
+		$POSTInfoRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPDiagnosticsDataType"
 
-	#shove into an array list
-	[System.Collections.ArrayList]$POSTInfoArrayList = $POSTInfoRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
+		#shove into an array list
+		[System.Collections.ArrayList]$POSTInfoArrayList = $POSTInfoRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
 
-	#remove the first two lines
-	$POSTInfoArrayList.RemoveRange(0,2)
+		#remove the first two lines
+		$POSTInfoArrayList.RemoveRange(0,2)
 
-	#trim leading/trailing whitespace from the first entry (date & time)
-	$POSTInfoArrayList[0] = $POSTInfoArrayList[0].Trim()
+		#trim leading/trailing whitespace from the first entry (date & time)
+		$POSTInfoArrayList[0] = $POSTInfoArrayList[0].Trim()
 
-	#split the date & time on space, this gives us 4 entries
-	[System.Collections.ArrayList]$POSTInfoRunDateArrayList = $POSTInfoArrayList[0].Split(" ")
+		#split the date & time on space, this gives us 4 entries
+		[System.Collections.ArrayList]$POSTInfoRunDateArrayList = $POSTInfoArrayList[0].Split(" ")
 
-	#delete the first two entries
-	$POSTInfoRunDateArrayList.RemoveRange(0,2)
+		#delete the first two entries
+		$POSTInfoRunDateArrayList.RemoveRange(0,2)
 
-	#now build a date & time string with ONLY the date and time
-	$POSTInfoLastRunDate = $POSTInfoRunDateArrayList[0] + " " + $POSTInfoRunDateArrayList[1]
+		#now build a date & time string with ONLY the date and time
+		$POSTInfoLastRunDate = $POSTInfoRunDateArrayList[0] + " " + $POSTInfoRunDateArrayList[1]
 
-	#now get the last run results
-	$POSTInfoLastRunResults = $POSTInfoArrayList[1].Split(":")[1].Trim()
+		#now get the last run results
+		$POSTInfoLastRunResults = $POSTInfoArrayList[1].Split(":")[1].Trim()
+	}
 
 	#sysctl section===============================================================================
 	$macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
@@ -441,9 +507,15 @@ function Get-MacInfo {
 	$macInfoFileVaultStatus = $macInfoFileVaultStatusArray[0].Split(" ")[-1].TrimEnd(".")
 	
 	#DNS host name
-	$macInfoDNSHostName = Invoke-Expression -Command "/usr/sbin/scutil --get HostName"
+	$macInfoDNSHostNameTest = Invoke-Expression -Command "/usr/sbin/scutil --get HostName"
+	#we want to test for null or empty so we can have a default value just in case
+	if([string]::IsNullOrEmpty($macInfoDNSHostNameTest)) {
+		$macInfoLocalHostName = "Hostname: Not Set"
+	} else {
+		$macInfoDNSHostName = $macInfoDNSHostNameTest
+	}
 
-	#local machine name
+	##local machine name
 	$macInfoLocalHostName = Invoke-Expression -Command "/usr/sbin/scutil --get ComputerName"
 
 	#get a list of network services. This takes a few steps. First, get the list and put it into an array
@@ -485,10 +557,10 @@ function Get-MacInfo {
 	## now pull out days.hours:minutes:seconds
 	$macInfoUptime = $macInfoUptime -join " "
 
-	##Get SIP status
+	##Get SIP status, split on : to make array
 	$csrutilOutput = (Invoke-Expression -Command "/usr/bin/csrutil status").Split(":")
 	#remove the leading space in the status
-	$csrutilStatus = $csrutilOutput[1].Substring(1)
+	$csrutilStatus = $csrutilOutput[1].Trim()
 	#remove the trailing period
 	$csrutilStatus = $csrutilStatus.Substring(0,$csrutilStatus.Length-1)
 
@@ -496,56 +568,71 @@ function Get-MacInfo {
 	if($isAppleSilicon) {
 		#into the (Apple Silcon) hashtable with you!
 		$macInfoHash.Add("macOSBuildLabEx", $mainDarwinKernelVersion)
-
+		$macInfoHash.Add(" "," ")
 		$macInfoHash.Add("macOSCurrentVersion", $macInfoOSVersion)
 		$macInfoHash.Add("macOSCurrentBuildNumber", $macInfoOSBuildNumber)
 		$macInfoHash.Add("macOSProductName", $macInfoOSName)
-
+		$macInfoHash.Add("  "," ")
 		$macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
-
-
+		$macInfoHash.Add("   "," ")
 		$macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
 		$macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
 		$macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
 		$macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
 		$macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
-
+		$macInfoHash.Add("    "," ")
 		$macInfoHash.Add("HardwareModelName", $macInfoModelName)
 		$macInfoHash.Add("HardwareModelID", $macInfoModelID)
+		$macInfoHash.Add("HardwareModelNumber", $macInfoModelNumber)
 		$macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
-
+		$macInfoHash.Add("     "," ")
 		$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
 		$macInfoHash.Add("CPUName" , $macInfoCPUName)
-		$macInfoHash.Add("CPUSpeed", "Not applicable to Apple Silicon")
-		$macInfoHash.Add("CPUCount", "Not applicable to Apple Silicon")
-		$macInfoHash.Add("CPUCoreCount", $macInfoCPUCoreCount)
-		$macInfoHash.Add("CPUL2CacheSize", "Not applicable to Apple Silicon")
+		$macInfoHash.Add("CPUTotalCoreCount", $macInfoCPUCoreCountTotal)#apple silicon only
+		$macInfoHash.Add("CPUPerformanceCoreCount", $macInfoCPUPerformanceCoreCount) #apple silicon only
+		$macInfoHash.Add("CPUEfficiencyCoreCount", $macInfoCPUEfficiencyCoreCount) #apple silicon only
 		$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
-		$macInfoHash.Add("L3CacheSize", "Not applicable to Apple Silicon")
-		$macInfoHash.Add("HyperThreadingEnabled", "Not applicable to Apple Silicon")
 		$macInfoHash.Add("RAMAmount", $macInfoRAMSize)
-
-
+		$macInfoHash.Add("      "," ")
+		$macInfoHash.Add("ApplePayPlatformID", $applePayInfoPlatformID)
+		$macInfoHash.Add("ApplePaySEID", $applePayInfoSEID)
+		$macInfoHash.Add("ApplePaySystemOSSEID", $applePayInfoSystemOSSEID)#apple silicon only
+		$macInfoHash.Add("ApplePayHardware", $applePayInfoHardware)
+		$macInfoHash.Add("ApplePayFirmware", $applePayInfoFirmware)
+		$macInfoHash.Add("ApplePayJCOPOSVersion", $applePayInfoJCOPOSVersion)
+		$macInfoHash.Add("ApplePayControllerHardwareVersion", $applePayControllerHardwareVersion)
+		$macInfoHash.Add("ApplePayControllerFirmwareVersion", $applePayControllerFirmwareVersion)
+		$macInfoHash.Add("ApplePayControllerMiddlewareVersion", $applePayControllerMiddlewareVersion)
+		$macInfoHash.Add("       "," ")
+		$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
+		$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
+		$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
+		$macInfoHash.Add("BluetoothFirmwareVersion",$bluetoothFirmwareVersion)
+		$macInfoHash.Add("BluetoothProductID", $blueToothProductID)
+		$macInfoHash.Add("BluetoothSupportedServices",$bluetoothSupportedServices)
+		$macInfoHash.Add("BluetoothTransport",$blueToothTransport)
+		$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
+		$macInfoHash.Add("        "," ")
 		$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
 		$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
 		$macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
-
+		$macInfoHash.Add("         "," ")
 		$macInfoHash.Add("BootDevice", $macInfoBootDevice)
 		$macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
 		$macInfoHash.Add("SIPStatus", $csrutilStatus)
-
+		$macInfoHash.Add("          "," ")
 		$macInfoHash.Add("EFICurrentLanguage", $macInfoEFILanguage)
 		$macInfoHash.Add("DSTStatus", $macInfoDSTStatus)
 		$macInfoHash.Add("TimeZone", $macInfoTimeZone)
 		$macInfoHash.Add("UTCOffset", $macInfoUTCOffset)
-
+		$macInfoHash.Add("           "," ")
 		$macInfoHash.Add("DNSHostName", $macInfoDNSHostName)
 		$macInfoHash.Add("LocalHostName", $macInfoLocalHostName)
 		$macInfoHash.Add("NetworkServiceList", $macInfoNICList)
-
+		$macInfoHash.Add("            "," ")
 		$macInfoHash.Add("CurrentUserName", $macInfoShortUserName)
 		$macInfoHash.Add("CurrentUserUID", $macInfoUID)
-
+		$macInfoHash.Add("             "," ")
 		$macInfoHash.Add("CurrentDateTime", $macInfoCurrentDate)
 		$macInfoHash.Add("LastBootDateTime", $macInfoLastBoot)
 		$macInfoHash.Add("Uptime", $macInfoUptime)
@@ -596,11 +683,10 @@ function Get-MacInfo {
 		$macInfoHash.Add("BluetoothFirmwareVersion",$bluetoothFirmwareVersion)
 		$macInfoHash.Add("BluetoothSupportedServices",$bluetoothSupportedServices)
 		$macInfoHash.Add("BluetoothTransport",$blueToothTransport)
-		$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
 		$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
 		$macInfoHash.Add("        "," ")
-		$macInfoHash.Add("POSTLastRunDate",$POSTInfoLastRunDate)
-		$macInfoHash.Add("POSTLastRunResults",$POSTInfoLastRunResults)
+		$macInfoHash.Add("POSTLastRunDate",$POSTInfoLastRunDate) #Intel Only
+		$macInfoHash.Add("POSTLastRunResults",$POSTInfoLastRunResults) #Intel Only
 		$macInfoHash.Add("         "," ")
 		$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
 		$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
