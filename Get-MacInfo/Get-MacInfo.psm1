@@ -510,7 +510,7 @@ function Get-MacInfo {
 	$macInfoDNSHostNameTest = Invoke-Expression -Command "/usr/sbin/scutil --get HostName"
 	#we want to test for null or empty so we can have a default value just in case
 	if([string]::IsNullOrEmpty($macInfoDNSHostNameTest)) {
-		$macInfoLocalHostName = "Hostname: Not Set"
+		$macInfoDNSHostName = "Hostname: Not Set"
 	} else {
 		$macInfoDNSHostName = $macInfoDNSHostNameTest
 	}
