@@ -382,7 +382,7 @@ function Get-MacInfo {
 
 	if($isAppleSilicon) {
 		#product ID
-		$blueToothProductID = $blueToothArrayList[6].Split(":")[1].Trim()
+		$blueToothProductID = $blueToothArrayList[5].Split(":")[1].Trim()
 
 		#supported services end up being weird and Apple Silicon has a one-off difference thanks to product ID
 		$bluetoothSupportedServicesRaw = $blueToothArrayList[6].Split(":")[1].Trim()
@@ -583,12 +583,12 @@ function Get-MacInfo {
 		$macInfoHash.Add("    "," ")
 		$macInfoHash.Add("HardwareModelName", $macInfoModelName)
 		$macInfoHash.Add("HardwareModelID", $macInfoModelID)
-		$macInfoHash.Add("HardwareModelNumber", $macInfoModelNumber)
+		$macInfoHash.Add("HardwareModelNumber", $macInfoModelNumber) #apple silicon only
 		$macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
 		$macInfoHash.Add("     "," ")
 		$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
 		$macInfoHash.Add("CPUName" , $macInfoCPUName)
-		$macInfoHash.Add("CPUTotalCoreCount", $macInfoCPUCoreCountTotal)#apple silicon only
+		$macInfoHash.Add("CPUTotalCoreCount", $macInfoCPUCoreCountTotal) #apple silicon only
 		$macInfoHash.Add("CPUPerformanceCoreCount", $macInfoCPUPerformanceCoreCount) #apple silicon only
 		$macInfoHash.Add("CPUEfficiencyCoreCount", $macInfoCPUEfficiencyCoreCount) #apple silicon only
 		$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
@@ -659,13 +659,13 @@ function Get-MacInfo {
 		$macInfoHash.Add("     "," ")
 		$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
 		$macInfoHash.Add("CPUName" , $macInfoCPUName)
-		$macInfoHash.Add("CPUSpeed", $macInfoCPUSpeed)
-		$macInfoHash.Add("CPUCount", $macInfoCPUCount)
+		$macInfoHash.Add("CPUSpeed", $macInfoCPUSpeed) #Intel Only
+		$macInfoHash.Add("CPUCount", $macInfoCPUCount) #Intel Only
 		$macInfoHash.Add("CPUCoreCount", $macInfoCPUCoreCount)
-		$macInfoHash.Add("CPUL2CacheSize", $macInfoCPUL2CacheSize)
+		$macInfoHash.Add("CPUL2CacheSize", $macInfoCPUL2CacheSize) #Intel Only
 		$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
-		$macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize)
-		$macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled)
+		$macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize) #Intel Only
+		$macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled) #Intel Only
 		$macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 		$macInfoHash.Add("      "," ")
 		$macInfoHash.Add("ApplePayPlatformID", $applePayInfoPlatformID)
