@@ -8,7 +8,7 @@ This is a powershell script for macOS that replicates, or tries to, the "Get-Com
 It's not a 1:1 replication, some of it wouldn't make any sense on a Mac. Also, it does check to make sure it's running
 on a mac. This pulls information from a variet of sources, including uname, sysctl, AppleScript, sw_ver, system_profiler,
 and some built-in powershell functions. It shoves it all into an ordered hashtable so there's some coherency in the output.
-If you run the script without any parameters, you get all the items in the hashtable. If you provide one key as a parameter, 
+If you run the script without any parameters, you get all the items in the hashtable. If you provide one key as a parameter,
 you get the information for that key. You can provide a comma-separated list of keys and you'll get that as a result.
 
 20221001 added code for Apple Silicon
@@ -22,24 +22,47 @@ macOSCurrentBuildNumber
 macOSProductName
 macOSDarwinVersion
 SystemFirmwareVersion
-T2FirmwareVersion
+T2FirmwareVersion (currently Intel only as a separate thing in system profiler SPHardwareDataType)
 OSLoaderVersion
 HardwareSerialNumber
 HardwareUUID
 ProvisioningUDID
 HardwareModelName
 HardwareModelID
+HardwareModelNumber (Apple Silicon Only)
 ActivationLockStatus
 CPUArchitecture
 CPUName
 CPUSpeed (Intel Only)
 CPUCount (Intel Only)
-CPUCoreCount
+CPUCoreCount (Intel Only)
+CPUTotalCoreCount (Apple Silicon Only)
+CPUPerformanceCoreCount (Apple Silicon Only)
+CPUEfficiencyCoreCount (Apple Silicon Only)
 CPUL2CacheSize (Intel Only)
 CPUBrandString
 L3CacheSize (Intel Only)
 HyperThreadingEnabled (Intel Only)
 RAMAmount
+ApplePayPlatformID
+ApplePaySEID
+ApplePaySystemOSSEID (Apple Silicon Only)
+ApplePayHardware
+ApplePayFirmware
+ApplePayJCOPOSVersion
+ApplePayControllerHardwareVersion
+ApplePayControllerFirmwareVersion
+ApplePayControllerMiddlewareVersion
+BluetoothMAC
+BluetoothChipset
+BluetoothDiscoverable
+BluetoothFirmwareVersion
+BluetoothProductID (Apple Silicon Only)
+BluetoothSupportedServices
+BluetoothTransport
+BluetoothVendorID
+POSTLastRunDate (Intel Only)
+POSTLastRunResults (Intel Only)
 AppMemoryUsedGB
 VMPageFile
 VMSwapInUseGB
@@ -69,7 +92,7 @@ Get-MacInfo TimeZone gives you the current timezone for the computer
 Get-MacInfo TimeZone,FileVault status gives you the current timezone and the filevault status for the computer
 
 .NOTES
-This can be used as a Powershell module or as a standalone script. 
+This can be used as a Powershell module or as a standalone script.
 
 .LINK
 https://github.com/johncwelch/Get-MacInfo
@@ -77,14 +100,8 @@ https://github.com/johncwelch/Get-MacInfo
 
 ## To do:
 	#app-sso output
-	#system_profiler SPSecureElementDataType (apple pay), get
-		#firmware
-		#JCOP OS
-		#controller hardware
-		#controller firmware
-		#controller middleware
 	#SPAudioDataType
-		#list the 
+	
 function Get-MacInfo {
 	#input parameter line, has to be the first executable line in the script
 	param ($keys)
@@ -92,7 +109,7 @@ function Get-MacInfo {
 	#check to make sure this is running on a mac, if not, print error message and exit
 	if (-Not $IsMacOS)
 		{
-		     write-host "This Script only runs on macOS, exiting"
+		     Write-Output "This Script only runs on macOS, exiting"
 		     Exit-PSSession
 		}
 
@@ -100,7 +117,7 @@ function Get-MacInfo {
 
 	#create the main hashtable that will hold all the values. This will allow for easier retreival of data
 	#in a more normal powershell way. Hashtables will work well since we're going to have no repeating keys and allows us to use "normal"
-	#dot notation to retrieve values. 
+	#dot notation to retrieve values.
 
 	$macInfoHash = [ordered]@{}
 
@@ -156,14 +173,14 @@ function Get-MacInfo {
 	#No HyperThreading Technology:
 
 	#we want to shove this into an array and remove blank lines. Luckily, we have the remove blank lines option from an earlier step,
-	#so we can just reuse that. We also want to have the split command just split on a new line. 
+	#so we can just reuse that. We also want to have the split command just split on a new line.
 	#the [Environment]::NewLine parameter handles splitting on a new line.
 	$macInfoSystemProfilerArray = $macInfoSystemProfilerRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
 
 	#now we have to get clever. So we're going to put this array into an arraylist so we can arbitrarily remove items we don't need.
 	#yes, it's a memory hog, but this is a very tiny array
 
-	[System.Collections.ArrayList]$macInfoSystemProfilerArrayList = $macInfoSystemProfilerArray 
+	[System.Collections.ArrayList]$macInfoSystemProfilerArrayList = $macInfoSystemProfilerArray
 
 	#now we remove the first two items. Note that RemoveRange parameters read as (startingIndex,numberofItemsToRemove)
 	$macInfoSystemProfilerArrayList.RemoveRange(0,2)
@@ -257,7 +274,7 @@ function Get-MacInfo {
 		
 		#model name
 		$macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1].Trim()
-          
+
 		#model Identfier
 		$macInfoModelID = $macInfoSystemProfilerArrayList[1].Split(":")[1].Trim()
 		
@@ -291,7 +308,7 @@ function Get-MacInfo {
 	#get the applepay info from system profiler
 	$applePayInfoArrayRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPSecureElementDataType"
 
-	#shove into an arraylist, remove all the blank lines 
+	#shove into an arraylist, remove all the blank lines
 	[System.Collections.ArrayList]$applePayInfoArrayList = $applePayInfoArrayRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
 
 	#remove the first two lines that only say "Apple Pay"
@@ -354,7 +371,7 @@ function Get-MacInfo {
 	#Intel doesn't have the product ID
 	$blueToothRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPBluetoothDataType"
 
-	#shove into an arraylist, remove all the blank lines 
+	#shove into an arraylist, remove all the blank lines
 	[System.Collections.ArrayList]$blueToothArrayList = $blueToothRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
 
 	#remove the first two lines
@@ -461,9 +478,9 @@ function Get-MacInfo {
 	$macInfoVMPageFile = Invoke-Expression -Command "/usr/sbin/sysctl -n vm.swapfileprefix"
 
 	##get application memory in use. This is calculated by ((vm page size) * (vm page internal count - vm page purgeable count)/1073741824)
-	##to get the memory used in GB. To get this without needing a ton of lines, we're going to directly inject the vm data into the 
+	##to get the memory used in GB. To get this without needing a ton of lines, we're going to directly inject the vm data into the
 	##equation, via invoke-expression to the correct sysctl values. the [Int] parameter coerces that text file returned to an integer value
-	##dividing by 1073741824 converts the number to GB. 
+	##dividing by 1073741824 converts the number to GB.
 	$macInfoAppMemoryUsedGB = (([Int](Invoke-Expression -Command "/usr/sbin/sysctl -n vm.pagesize")) * (([Int](Invoke-Expression -Command "/usr/sbin/sysctl -n vm.page_pageable_internal_count")) - ([Int](Invoke-Expression -Command "/usr/sbin/sysctl -n vm.page_purgeable_count"))))/1073741824
 
 	##now, we trim this down to four decimal places (just in case it's less than a GB, we get a useful number that way)
@@ -475,7 +492,7 @@ function Get-MacInfo {
 
 	##next, the value we want is the 6th entry in the array. that's a string that ends in "M", so we want to trim that "M" from the
 	##end via "TrimEnd("M"), which makes the string able to be coerced into a decimal via [Decimal], then we divide by 1024
-	##to convert the data in MB to GB (we're trying to stick with GB in this where possible), and finally, we limit the decimal 
+	##to convert the data in MB to GB (we're trying to stick with GB in this where possible), and finally, we limit the decimal
 	##to four decimal places "{0,N4}" -f at the front end. Again, we use four decimal places in case there's less than a GB of swap used.
 
 	$macInfoVMSwapUsed = "{0:N4}" -f (([Decimal]($macInfoVMSwapUsed[5].TrimEnd("M")))/1024)
@@ -547,13 +564,13 @@ function Get-MacInfo {
 	##run who -b, but split on a space since you only get back a single line.
 	$macInfoLastBoot = (Invoke-Expression -Command "/usr/bin/who -b").Split(" ",[System.StringSplitOptions]::RemoveEmptyEntries)
 	##remove the first two entries, since those aren't of use here
-	$macInfoLastBoot = $macInfoLastBoot[2..($macInfoLastBoot.length - 1)] 
+	$macInfoLastBoot = $macInfoLastBoot[2..($macInfoLastBoot.length - 1)]
 	##convert it from an array back to a single line text string with the things we want
 	$macInfoLastBoot = $macInfoLastBoot -join ' '
 
 	#get uptime since
 	##first, get the raw uptime
-	$macInfoUptime = Get-Uptime 
+	$macInfoUptime = Get-Uptime
 	## now pull out days.hours:minutes:seconds
 	$macInfoUptime = $macInfoUptime -join " "
 
