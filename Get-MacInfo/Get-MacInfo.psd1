@@ -13,7 +13,7 @@
     RootModule = 'Get-MacInfo.psm1'
     
     # Version number of this module.
-    ModuleVersion = '1.1'
+    ModuleVersion = '1.1.1'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -108,7 +108,7 @@
             # IconUri = ''
     
             # ReleaseNotes of this module
-            ReleaseNotes = 'Initial Apple Silicon Update'
+            ReleaseNotes = 'Updated Help to list Intel/Apple Silcon only keys'
     
             # Prerelease string of this module
             # Prerelease = ''
