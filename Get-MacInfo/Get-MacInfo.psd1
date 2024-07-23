@@ -13,7 +13,7 @@
     RootModule = 'Get-MacInfo.psm1'
     
     # Version number of this module.
-    ModuleVersion = '1.1.1'
+    ModuleVersion = '1.1.2'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -96,10 +96,10 @@
         PSData = @{
     
             # Tags applied to this module. These help with module discovery in online galleries.
-            # Tags = @()
+            Tags = @('Mac','macOS','Mac Admins','MacAdmins')
     
             # A URL to the license for this module.
-            # LicenseUri = ''
+            LicenseUri = 'https://github.com/johncwelch/Get-MacInfo/blob/master/LICENSE.txt'
     
             # A URL to the main website for this project.
             ProjectUri = 'https://github.com/johncwelch/Get-MacInfo'
