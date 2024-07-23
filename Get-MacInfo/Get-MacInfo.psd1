@@ -96,7 +96,7 @@
         PSData = @{
     
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags = @('Mac','macOS','Mac Admins','MacAdmins')
+            Tags = @('Mac','macOS','MacAdmins')
     
             # A URL to the license for this module.
             LicenseUri = 'https://github.com/johncwelch/Get-MacInfo/blob/master/LICENSE.txt'
@@ -108,7 +108,7 @@
             # IconUri = ''
     
             # ReleaseNotes of this module
-            ReleaseNotes = 'Updated Help to list Intel/Apple Silcon only keys'
+            ReleaseNotes = 'Added tags and licenseuri'
     
             # Prerelease string of this module
             # Prerelease = ''
