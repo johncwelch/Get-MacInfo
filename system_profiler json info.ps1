@@ -1,3 +1,18 @@
+function getSPJSONData {
+	param (
+		[Parameter(Mandatory = $true)][string] $SPDataType
+	)
+	
+	#get raw json data from system_profiler for $SPDataType. This creates an array of strings
+	$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -json"
+	#convert array to one string
+	$SPStringResults = $SPRawResults|Out-String
+	#create JSON object from string
+	$SPJSONResults = ConvertFrom-Json -InputObject $SPStringResults
+	#return JSON object to calling command
+	return $SPJSONResults
+}
+
 ##test for internal battery
 #get ioreg info
 $ioregBatteryInfoArray = Invoke-Expression -Command "/usr/sbin/ioreg -brc AppleSmartBattery"
@@ -9,11 +24,13 @@ $hasBattery = $hasBatteryInfo.Split("=")[1].Trim()
 
 
 #get raw json data from system_profiler. This creates an array of strings
-$SPPowerTypeRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPPowerDataType -json"
+#$SPPowerTypeRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPPowerDataType -json"
 #convert array to one string
-$SPPowerTypeString = $SPPowerTypeRaw|Out-String
+#$SPPowerTypeString = $SPPowerTypeRaw|Out-String
 #create JSON object from string
-$SPPowerTypeData = ConvertFrom-Json -InputObject $SPPowerTypeString
+#$SPPowerTypeData = ConvertFrom-Json -InputObject $SPPowerTypeString
+
+$SPPowerTypeData = getSPJSONData -SPDataType "SPPowerDataType"
 
 ##get various info blocks from json
 #battery info
@@ -32,7 +49,20 @@ $BatteryPowerInfo = $SPPowerTypeData[0].SPPowerDataType[1].'Battery Power'
 $UPSInstalled = $SPPowerTypeData[0].SPPowerDataType[2].sppower_ups_installed
 
 #Info about the AC charger
-$ACChargerInfo = $SPPowerTypeData[0].SPPowerDataType[3]
+<# $ACChargerInfo = $SPPowerTypeData[0].SPPowerDataType[3]
+try {
+	#if the first index is invalid, it will throw an error for try catch
+	#if the second one is invalid, it just sets $test to $null
+	$test = $SPPowerTypeData[0].SPPowerDataType[6]
+}
+catch {
+	write-output "nothing there"
+}
+
+if($null -eq $test) {
+	write-output "nothing there"
+} #>
+
 
 $batteryWarningLevel = $batteryChargeInfo.sppower_battery_at_warn_level
 $batteryFullyCharged = $batteryChargeInfo.sppower_battery_fully_charged
@@ -59,3 +89,4 @@ $ACChargerID = $ACChargerInfo.sppower_ac_charger_ID
 $ACChargerHWVers = $ACChargerInfo.sppower_ac_charger_hardware_version #only for apple chargers
 $ACChargerFirmwareVers = $ACChargerInfo.sppower_ac_charger_firmware_version #only for apple chargers
 
+$batterySerialNumber
