@@ -1,3 +1,12 @@
+##test for internal battery
+#get ioreg info
+$ioregBatteryInfoArray = Invoke-Expression -Command "/usr/sbin/ioreg -brc AppleSmartBattery"
+#look for "built-in"
+$hasBatteryInfo = $ioregBatteryInfoArray|Where-Object { $_ -match "`"built-in`"" }
+#split and get value, will be "yes" if has battery
+#use for???
+$hasBattery = $hasBatteryInfo.Split("=")[1].Trim()
+
 
 #get raw json data from system_profiler. This creates an array of strings
 $SPPowerTypeRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPPowerDataType -json"
@@ -40,13 +49,13 @@ $batteryFirmwareVersion = $batteryModelInfo.sppower_battery_firmware_version
 $batteryHardwareRevision = $batteryModelInfo.sppower_battery_hardware_revision
 $batteryCellRevision = $batteryModelInfo.sppower_battery_cell_revision
 
-$ACChargerName = $ACChargerInfo.sppower_ac_charger_name
-$ACChargerSerialNumber = $ACChargerInfo.sppower_ac_charger_serial_number
+$ACChargerName = $ACChargerInfo.sppower_ac_charger_name #only for apple chargers
+$ACChargerSerialNumber = $ACChargerInfo.sppower_ac_charger_serial_number #only for apple chargers
 $ACChargerWatts = $ACChargerInfo.sppower_ac_charger_watts
-$ACChargerManf = $ACChargerInfo.sppower_ac_charger_manufacturer
+$ACChargerManf = $ACChargerInfo.sppower_ac_charger_manufacturer #only for apple chargers
 $ACChargerConnected = $ACChargerInfo.sppower_battery_charger_connected #false when on battery, use as check
 $ACChargerCharging = $ACChargerInfo.sppower_battery_is_charging #this and connected are only items when not plugged in
-$ACChargerID = $ACChargerInfo.sppower_ac_charger_ID
-$ACChargerHWVers = $ACChargerInfo.sppower_ac_charger_hardware_version
-$ACChargerFirmwareVers = $ACChargerInfo.sppower_ac_charger_firmware_version
+$ACChargerID = $ACChargerInfo.sppower_ac_charger_ID 
+$ACChargerHWVers = $ACChargerInfo.sppower_ac_charger_hardware_version #only for apple chargers
+$ACChargerFirmwareVers = $ACChargerInfo.sppower_ac_charger_firmware_version #only for apple chargers
 
