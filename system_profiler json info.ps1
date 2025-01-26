@@ -13,30 +13,70 @@ function getSPJSONData {
 	return $SPJSONResults
 }
 
+function getSPBatteryChargeInfo {
+	param (
+		[Parameter(Mandatory = $true)][string] $theIndex,
+		[Parameter(Mandatory = $true)][string] $theName,
+		[Parameter(Mandatory = $true)][PSCustomObject] $theObject
+	)
+
+	
+}
+
+
 ##test for internal battery
 #get ioreg info
-$ioregBatteryInfoArray = Invoke-Expression -Command "/usr/sbin/ioreg -brc AppleSmartBattery"
+#$ioregBatteryInfoArray = Invoke-Expression -Command "/usr/sbin/ioreg -brc AppleSmartBattery"
 #look for "built-in"
-$hasBatteryInfo = $ioregBatteryInfoArray|Where-Object { $_ -match "`"built-in`"" }
+#$hasBatteryInfo = $ioregBatteryInfoArray|Where-Object { $_ -match "`"built-in`"" }
 #split and get value, will be "yes" if has battery
 #use for???
-$hasBattery = $hasBatteryInfo.Split("=")[1].Trim()
+#$hasBattery = $hasBatteryInfo.Split("=")[1].Trim()
 
-
-#get raw json data from system_profiler. This creates an array of strings
-#$SPPowerTypeRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPPowerDataType -json"
-#convert array to one string
-#$SPPowerTypeString = $SPPowerTypeRaw|Out-String
-#create JSON object from string
-#$SPPowerTypeData = ConvertFrom-Json -InputObject $SPPowerTypeString
-
+#get full output of SPPowerDataType as JSON
 $SPPowerTypeData = getSPJSONData -SPDataType "SPPowerDataType"
 
-##get various info blocks from json
-#battery info
-$batteryChargeInfo = $SPPowerTypeData[0].SPPowerDataType[0].sppower_battery_charge_info
-$batteryHealthInfo = $SPPowerTypeData[0].SPPowerDataType[0].sppower_battery_health_info
-$batteryModelInfo = $SPPowerTypeData[0].SPPowerDataType[0].sppower_battery_model_info
+#get number of items in the collection
+$SPPowerTypeDataCount = $SPPowerTypeData.SPPowerDataType.Count
+
+$SPPowerTypeNames = $SPPowerTypeData[0].SPPowerDataType._name
+
+foreach($entry in $SPPowerTypeNames) {
+	$theIndex = [array]::IndexOf($SPPowerTypeNames,$entry)
+	switch ($entry) {
+		"spbattery_information" {
+			#get all three battery information items
+			$batteryChargeInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_charge_info
+			$Global:batteryWarningLevel = $batteryChargeInfo.sppower_battery_at_warn_level
+			$Global:batteryFullyCharged = $batteryChargeInfo.sppower_battery_fully_charged
+			$Global:batteryIsCharging = $batteryChargeInfo.sppower_battery_is_charging
+			$Global:batteryChargeLevel = $batteryChargeInfo.sppower_battery_state_of_charge
+
+			$batteryHealthInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_health_info
+			$Global:batteryCycleCount = $batteryHealthInfo.sppower_battery_cycle_count
+			$Global:batteryHealth = $batteryHealthInfo.sppower_battery_health
+			$Global:batteryMaxCapacity = $batteryHealthInfo.sppower_battery_health_maximum_capacity
+
+			$batteryModelInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_model_info
+		}
+
+		"sppower_information" {
+			#we can assume there's ALWAYS an AC power type
+			$ACPowerInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].'AC Power'
+			if(!([string]::IsNullOrEmpty($ACPowerInfo.'Current Power Source'))) {
+				$Global:ACCurrentPowerSource = $ACPowerInfo.'Current Power Source'
+			}
+			$Global:ACDisplaySleepTimer = $ACPowerInfo.'Display Sleep Timer'
+			$Global:ACHibernateMode = $ACPowerInfo.'Hibernate Mode'
+			$Global:ACNetworkOverSleep = $ACPowerInfo.PrioritizeNetworkReachabilityOverSleep
+			$Global:ACSleepOnPowerButton = $ACPowerInfo.'Sleep On Power Button'
+			$Global:ACSleepTimer = $ACPowerInfo.'System Sleep Timer'
+			$Global:ACWakeOnLAN = $ACPowerInfo.'Wake On LAN'
+
+			#Test for battery
+		}
+	}
+}
 
 #info about AC power like current power source, sleep timers, etc.
 #note that current power source only appears in the entry that is 
@@ -64,15 +104,6 @@ if($null -eq $test) {
 } #>
 
 
-$batteryWarningLevel = $batteryChargeInfo.sppower_battery_at_warn_level
-$batteryFullyCharged = $batteryChargeInfo.sppower_battery_fully_charged
-$batteryIsCharging = $batteryChargeInfo.sppower_battery_is_charging
-$batteryChargeLevel = $batteryChargeInfo.sppower_battery_state_of_charge
-
-$batteryCycleCount = $batteryHealthInfo.sppower_battery_cycle_count
-$batteryHealth = $batteryHealthInfo.sppower_battery_health
-$batteryMaxCapacity = $batteryHealthInfo.sppower_battery_health_maximum_capacity
-
 $batterySerialNumber = $batteryModelInfo.sppower_battery_serial_number
 $batteryDeviceName = $batteryModelInfo.sppower_battery_device_name
 $batteryFirmwareVersion = $batteryModelInfo.sppower_battery_firmware_version
@@ -89,4 +120,4 @@ $ACChargerID = $ACChargerInfo.sppower_ac_charger_ID
 $ACChargerHWVers = $ACChargerInfo.sppower_ac_charger_hardware_version #only for apple chargers
 $ACChargerFirmwareVers = $ACChargerInfo.sppower_ac_charger_firmware_version #only for apple chargers
 
-$batterySerialNumber
+#$batterySerialNumber
