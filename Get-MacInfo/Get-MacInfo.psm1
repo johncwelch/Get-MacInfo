@@ -11,7 +11,7 @@ function getSPJSONData {
 	)
 	
 	#get raw json data from system_profiler for $SPDataType. This creates an array of strings
-	$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -json"
+	$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -detailLevel full -json"
 	#convert array to one string
 	$SPStringResults = $SPRawResults|Out-String
 	#create JSON object from string
