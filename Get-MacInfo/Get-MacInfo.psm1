@@ -1,123 +1,124 @@
 #!/usr/bin/env pwsh
 
-<#
-.SYNOPSIS
-This is a powershell script for macOS that replicates, or tries to, the "Get-ComputerInfo" command for Windows Powershell
-
-.DESCRIPTION
-It's not a 1:1 replication, some of it wouldn't make any sense on a Mac. Also, it does check to make sure it's running
-on a mac. This pulls information from a variet of sources, including uname, sysctl, AppleScript, sw_ver, system_profiler,
-and some built-in powershell functions. It shoves it all into an ordered hashtable so there's some coherency in the output.
-If you run the script without any parameters, you get all the items in the hashtable. If you provide one key as a parameter,
-you get the information for that key. You can provide a comma-separated list of keys and you'll get that as a result.
-
-20221001 added code for Apple Silicon
-
-Note: the keys labled "Intel Only" don't exist for Apple Silicon.
-
-Current keys are:
-macOSBuildLabEx
-macOSCurrentVersion
-macOSCurrentBuildNumber
-macOSProductName
-macOSDarwinVersion
-SystemFirmwareVersion
-T2FirmwareVersion (currently Intel only as a separate thing in system profiler SPHardwareDataType)
-OSLoaderVersion
-HardwareSerialNumber
-HardwareUUID
-ProvisioningUDID
-HardwareModelName
-HardwareModelID
-HardwareModelNumber (Apple Silicon Only)
-ActivationLockStatus
-CPUArchitecture
-CPUName
-CPUSpeed (Intel Only)
-CPUCount (Intel Only)
-CPUCoreCount (Intel Only)
-CPUTotalCoreCount (Apple Silicon Only)
-CPUPerformanceCoreCount (Apple Silicon Only)
-CPUEfficiencyCoreCount (Apple Silicon Only)
-CPUL2CacheSize (Intel Only)
-CPUBrandString
-L3CacheSize (Intel Only)
-HyperThreadingEnabled (Intel Only)
-RAMAmount
-ApplePayPlatformID
-ApplePaySEID
-ApplePaySystemOSSEID (Apple Silicon Only)
-ApplePayHardware
-ApplePayFirmware
-ApplePayJCOPOSVersion
-ApplePayControllerHardwareVersion
-ApplePayControllerFirmwareVersion
-ApplePayControllerMiddlewareVersion
-BluetoothMAC
-BluetoothChipset
-BluetoothDiscoverable
-BluetoothFirmwareVersion
-BluetoothProductID (Apple Silicon Only)
-BluetoothSupportedServices
-BluetoothTransport
-BluetoothVendorID
-POSTLastRunDate (Intel Only)
-POSTLastRunResults (Intel Only)
-AppMemoryUsedGB
-VMPageFile
-VMSwapInUseGB
-BootDevice
-FileVaultStatus
-SIPStatus
-EFICurrentLanguage
-DSTStatus
-TimeZone
-UTCOffset
-DNSHostName
-LocalHostName
-NetworkServiceList
-CurrentUserName
-CurrentUserUID
-CurrentDateTime
-LastBootDateTime
-Uptime
-
-.EXAMPLE
-Get-MacInfo by itself gives you all the parameters it can output
-
-.EXAMPLE
-Get-MacInfo TimeZone gives you the current timezone for the computer
-
-.EXAMPLE
-Get-MacInfo TimeZone,FileVault status gives you the current timezone and the filevault status for the computer
-
-.NOTES
-This can be used as a Powershell module or as a standalone script.
-
-.LINK
-https://github.com/johncwelch/Get-MacInfo
-#>
 
 ## To do:
 	#app-sso output
 	#SPAudioDataType
 	
-	function getSPJSONData {
-		param (
-			[Parameter(Mandatory = $true)][string] $SPDataType
-		)
-		
-		#get raw json data from system_profiler for $SPDataType. This creates an array of strings
-		$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -json"
-		#convert array to one string
-		$SPStringResults = $SPRawResults|Out-String
-		#create JSON object from string
-		$SPJSONResults = ConvertFrom-Json -InputObject $SPStringResults
-		#return JSON object to calling command
-		return $SPJSONResults
-	}
+function getSPJSONData {
+	param (
+		[Parameter(Mandatory = $true)][string] $SPDataType
+	)
+	
+	#get raw json data from system_profiler for $SPDataType. This creates an array of strings
+	$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -json"
+	#convert array to one string
+	$SPStringResults = $SPRawResults|Out-String
+	#create JSON object from string
+	$SPJSONResults = ConvertFrom-Json -InputObject $SPStringResults
+	#return JSON object to calling command
+	return $SPJSONResults
+}
 
-	function Get-MacInfo {
+function Get-MacInfo {
+	<#
+	.SYNOPSIS
+	This is a powershell script for macOS that replicates, or tries to, the "Get-ComputerInfo" command for Windows Powershell
+
+	.DESCRIPTION
+	It's not a 1:1 replication, some of it wouldn't make any sense on a Mac. Also, it does check to make sure it's running
+	on a mac. This pulls information from a variet of sources, including uname, sysctl, AppleScript, sw_ver, system_profiler,
+	and some built-in powershell functions. It shoves it all into an ordered hashtable so there's some coherency in the output.
+	If you run the script without any parameters, you get all the items in the hashtable. If you provide one key as a parameter,
+	you get the information for that key. You can provide a comma-separated list of keys and you'll get that as a result.
+
+	20221001 added code for Apple Silicon
+
+	Note: the keys labled "Intel Only" don't exist for Apple Silicon.
+
+	Current keys are:
+	macOSBuildLabEx
+	macOSCurrentVersion
+	macOSCurrentBuildNumber
+	macOSProductName
+	macOSDarwinVersion
+	SystemFirmwareVersion
+	T2FirmwareVersion (currently Intel only as a separate thing in system profiler SPHardwareDataType)
+	OSLoaderVersion
+	HardwareSerialNumber
+	HardwareUUID
+	ProvisioningUDID
+	HardwareModelName
+	HardwareModelID
+	HardwareModelNumber (Apple Silicon Only)
+	ActivationLockStatus
+	CPUArchitecture
+	CPUName
+	CPUSpeed (Intel Only)
+	CPUCount (Intel Only)
+	CPUCoreCount (Intel Only)
+	CPUTotalCoreCount (Apple Silicon Only)
+	CPUPerformanceCoreCount (Apple Silicon Only)
+	CPUEfficiencyCoreCount (Apple Silicon Only)
+	CPUL2CacheSize (Intel Only)
+	CPUBrandString
+	L3CacheSize (Intel Only)
+	HyperThreadingEnabled (Intel Only)
+	RAMAmount
+	ApplePayPlatformID
+	ApplePaySEID
+	ApplePaySystemOSSEID (Apple Silicon Only)
+	ApplePayHardware
+	ApplePayFirmware
+	ApplePayJCOPOSVersion
+	ApplePayControllerHardwareVersion
+	ApplePayControllerFirmwareVersion
+	ApplePayControllerMiddlewareVersion
+	BluetoothMAC
+	BluetoothChipset
+	BluetoothDiscoverable
+	BluetoothFirmwareVersion
+	BluetoothProductID (Apple Silicon Only)
+	BluetoothSupportedServices
+	BluetoothTransport
+	BluetoothVendorID
+	POSTLastRunDate (Intel Only)
+	POSTLastRunResults (Intel Only)
+	AppMemoryUsedGB
+	VMPageFile
+	VMSwapInUseGB
+	BootDevice
+	FileVaultStatus
+	SIPStatus
+	EFICurrentLanguage
+	DSTStatus
+	TimeZone
+	UTCOffset
+	DNSHostName
+	LocalHostName
+	NetworkServiceList
+	CurrentUserName
+	CurrentUserUID
+	CurrentDateTime
+	LastBootDateTime
+	Uptime
+
+	.EXAMPLE
+	Get-MacInfo by itself gives you all the parameters it can output
+
+	.EXAMPLE
+	Get-MacInfo TimeZone gives you the current timezone for the computer
+
+	.EXAMPLE
+	Get-MacInfo TimeZone,FileVault status gives you the current timezone and the filevault status for the computer
+
+	.NOTES
+	This can be used as a Powershell module or as a standalone script.
+
+	.LINK
+	https://github.com/johncwelch/Get-MacInfo
+	#>
+
 	#input parameter line, has to be the first executable line in the script
 	param ($keys)
 
@@ -176,7 +177,9 @@ https://github.com/johncwelch/Get-MacInfo
 	#system_profiler section=========================================================
 
 	#now, let's get our system_profiler hardware info
-	$macInfoSystemProfilerRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType"
+	#$macInfoSystemProfilerRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType"
+	$SPHardwareTypeData = getSPJSONData -SPDataType "SPHardwareDataType"
+	$SPHardwareTypeInfo = $SPHardwareTypeData[0].SPHardwareDataType[0]
 
 	##Apple Silicon Differences
 	#Chip: instead of Processor Name:
@@ -190,15 +193,15 @@ https://github.com/johncwelch/Get-MacInfo
 	#we want to shove this into an array and remove blank lines. Luckily, we have the remove blank lines option from an earlier step,
 	#so we can just reuse that. We also want to have the split command just split on a new line.
 	#the [Environment]::NewLine parameter handles splitting on a new line.
-	$macInfoSystemProfilerArray = $macInfoSystemProfilerRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
+	#$macInfoSystemProfilerArray = $macInfoSystemProfilerRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
 
 	#now we have to get clever. So we're going to put this array into an arraylist so we can arbitrarily remove items we don't need.
 	#yes, it's a memory hog, but this is a very tiny array
 
-	[System.Collections.ArrayList]$macInfoSystemProfilerArrayList = $macInfoSystemProfilerArray
+	#[System.Collections.ArrayList]$macInfoSystemProfilerArrayList = $macInfoSystemProfilerArray
 
 	#now we remove the first two items. Note that RemoveRange parameters read as (startingIndex,numberofItemsToRemove)
-	$macInfoSystemProfilerArrayList.RemoveRange(0,2)
+	#$macInfoSystemProfilerArrayList.RemoveRange(0,2)
 
 	###Here is the first place where we have to account for Apple Silicon vs Intel
      ##.Trim() removes all leading and trailing whitespace in one step
@@ -206,36 +209,47 @@ https://github.com/johncwelch/Get-MacInfo
 	#Apple Silicon Section
 	if($isAppleSilicon) {
 		#getthe System Firmware Version
-		$macInfoEFIVersion = $macInfoSystemProfilerArrayList[6].Split(":")[1].Trim()
+		#$macInfoEFIVersion = $macInfoSystemProfilerArrayList[6].Split(":")[1].Trim()
+		$macInfoEFIVersion = $SPHardwareTypeInfo.boot_rom_version
 
 		#Get the OS Loader Version
-		$macInfoSMCVersion = $macInfoSystemProfilerArrayList[7].Split(":")[1].Trim()
+		#$macInfoSMCVersion = $macInfoSystemProfilerArrayList[7].Split(":")[1].Trim()
+		$macInfoSMCVersion = $SPHardwareTypeInfo.os_loader_version
 
 		#hardware serial number
-		$macInfoHardwareSN = $macInfoSystemProfilerArrayList[8].Split(":")[1].Trim()
+		#$macInfoHardwareSN = $macInfoSystemProfilerArrayList[8].Split(":")[1].Trim()
+		$macInfoHardwareSN = $SPHardwareTypeInfo.serial_number
 
 		#hardware UUID
-		$macInfoHardwareUUID = $macInfoSystemProfilerArrayList[9].Split(":")[1].Trim()
+		#$macInfoHardwareUUID = $macInfoSystemProfilerArrayList[9].Split(":")[1].Trim()
+		$macInfoHardwareUUID = $SPHardwareTypeInfo.platform_UUID
 
 		#provisioning UUID
-		$macInfoProvisioningUDID = $macInfoSystemProfilerArrayList[10].Split(":")[1].Trim()
+		#$macInfoProvisioningUDID = $macInfoSystemProfilerArrayList[10].Split(":")[1].Trim()
+		$macInfoProvisioningUDID = $SPHardwareTypeInfo.provisioning_UDID
 
 		#activation Lock status
-		$macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[11].Split(":")[1].Trim()
+		#$macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[11].Split(":")[1].Trim()
+		$macInfoActivationLockStatus = $SPHardwareTypeInfo.activation_lock_status
 
 		#model name
-		$macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1].Trim()
+		#$macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1].Trim()
+		$macInfoModelName = $SPHardwareTypeInfo.machine_name
 
 		#model Identfier
-		$macInfoModelID = $macInfoSystemProfilerArrayList[1].Split(":")[1].Trim()
+		#$macInfoModelID = $macInfoSystemProfilerArrayList[1].Split(":")[1].Trim()
+		$macInfoModelID = $SPHardwareTypeInfo.machine_model
 
 		#model number
-		$macInfoModelNumber = $macInfoSystemProfilerArrayList[2].Split(":")[1].Trim()
+		#$macInfoModelNumber = $macInfoSystemProfilerArrayList[2].Split(":")[1].Trim()
+		$macInfoModelNumber = $SPHardwareTypeInfo.model_number
 
 		#CPU Model
-		$macInfoCPUName = $macInfoSystemProfilerArrayList[3].Split(":")[1].Trim()
+		#$macInfoCPUName = $macInfoSystemProfilerArrayList[3].Split(":")[1].Trim()
+		$macInfoCPUName = $SPHardwareTypeInfo.chip_type
 
 		#core count. We're going to split ito perf and efficiency
+		#This is a mess to get because it doesn't show in the JSON output
 		$macInfoCPUCoreCount = $macInfoSystemProfilerArrayList[4].Split(":")[1].Trim()
 
 		#list total cores
