@@ -102,7 +102,22 @@ https://github.com/johncwelch/Get-MacInfo
 	#app-sso output
 	#SPAudioDataType
 	
-function Get-MacInfo {
+	function getSPJSONData {
+		param (
+			[Parameter(Mandatory = $true)][string] $SPDataType
+		)
+		
+		#get raw json data from system_profiler for $SPDataType. This creates an array of strings
+		$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -json"
+		#convert array to one string
+		$SPStringResults = $SPRawResults|Out-String
+		#create JSON object from string
+		$SPJSONResults = ConvertFrom-Json -InputObject $SPStringResults
+		#return JSON object to calling command
+		return $SPJSONResults
+	}
+
+	function Get-MacInfo {
 	#input parameter line, has to be the first executable line in the script
 	param ($keys)
 
