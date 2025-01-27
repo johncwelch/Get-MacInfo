@@ -13,14 +13,9 @@ function getSPJSONData {
 	return $SPJSONResults
 }
 
-##test for internal battery
-#get ioreg info
-#$ioregBatteryInfoArray = Invoke-Expression -Command "/usr/sbin/ioreg -brc AppleSmartBattery"
-#look for "built-in"
-#$hasBatteryInfo = $ioregBatteryInfoArray|Where-Object { $_ -match "`"built-in`"" }
-#split and get value, will be "yes" if has battery
-#use for???
-#$hasBattery = $hasBatteryInfo.Split("=")[1].Trim()
+##note that we use flags for if there's a battery and/or UPS
+##we'll test at the "Building the hash table" stage. If either is false, then we don't provide
+##battery/UPS info
 
 #get full output of SPPowerDataType as JSON
 $SPPowerTypeData = getSPJSONData -SPDataType "SPPowerDataType"
@@ -84,6 +79,8 @@ foreach($entry in $SPPowerTypeNames) {
 			$batteryPowerInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].'Battery Power'
 			#if there's no battery power, $batteryPowerInfo will be null
 			if ($null -ne $batteryPowerInfo) {
+				#this is possibly redundant, but since we can't be SURE which will be hit first, this
+				#or the preceding battery info, setting it here too is fine.
 				$Global:hasBattery = $true
 				#test to see if computer is running on battery power
 				if(!([string]::IsNullOrEmpty($batteryPowerInfo.'Current Power Source'))) {
@@ -117,6 +114,7 @@ foreach($entry in $SPPowerTypeNames) {
 
 		"sppower_hwconfig_information" {
 			#has one value: is a UPS installed or not
+			#it always exists, so we don't need to set it anywhere else
 			$Global:UPSInstalled = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_ups_installed
 			#set the flag appropriately.
 			if ($UPSInstalled -eq "TRUE") {
