@@ -176,9 +176,10 @@ function Get-MacInfo {
 
 	#system_profiler section=========================================================
 
-	#now, let's get our system_profiler hardware info
-	#$macInfoSystemProfilerRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType"
+	##now, let's get our system_profiler hardware info
+	#use getSPJSONData to get a JSON object for SPHardwareDataType
 	$SPHardwareTypeData = getSPJSONData -SPDataType "SPHardwareDataType"
+	#set up a var that deals with the first two layers of the return
 	$SPHardwareTypeInfo = $SPHardwareTypeData[0].SPHardwareDataType[0]
 
 	##Apple Silicon Differences
@@ -190,83 +191,69 @@ function Get-MacInfo {
 	#No L3 Cache:
 	#No HyperThreading Technology:
 
-	#we want to shove this into an array and remove blank lines. Luckily, we have the remove blank lines option from an earlier step,
-	#so we can just reuse that. We also want to have the split command just split on a new line.
-	#the [Environment]::NewLine parameter handles splitting on a new line.
-	#$macInfoSystemProfilerArray = $macInfoSystemProfilerRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
-
-	#now we have to get clever. So we're going to put this array into an arraylist so we can arbitrarily remove items we don't need.
-	#yes, it's a memory hog, but this is a very tiny array
-
-	#[System.Collections.ArrayList]$macInfoSystemProfilerArrayList = $macInfoSystemProfilerArray
-
-	#now we remove the first two items. Note that RemoveRange parameters read as (startingIndex,numberofItemsToRemove)
-	#$macInfoSystemProfilerArrayList.RemoveRange(0,2)
-
-	###Here is the first place where we have to account for Apple Silicon vs Intel
-     ##.Trim() removes all leading and trailing whitespace in one step
-
 	#Apple Silicon Section
 	if($isAppleSilicon) {
 		#getthe System Firmware Version
-		#$macInfoEFIVersion = $macInfoSystemProfilerArrayList[6].Split(":")[1].Trim()
 		$macInfoEFIVersion = $SPHardwareTypeInfo.boot_rom_version
 
 		#Get the OS Loader Version
-		#$macInfoSMCVersion = $macInfoSystemProfilerArrayList[7].Split(":")[1].Trim()
 		$macInfoSMCVersion = $SPHardwareTypeInfo.os_loader_version
 
 		#hardware serial number
-		#$macInfoHardwareSN = $macInfoSystemProfilerArrayList[8].Split(":")[1].Trim()
 		$macInfoHardwareSN = $SPHardwareTypeInfo.serial_number
 
 		#hardware UUID
-		#$macInfoHardwareUUID = $macInfoSystemProfilerArrayList[9].Split(":")[1].Trim()
 		$macInfoHardwareUUID = $SPHardwareTypeInfo.platform_UUID
 
 		#provisioning UUID
-		#$macInfoProvisioningUDID = $macInfoSystemProfilerArrayList[10].Split(":")[1].Trim()
 		$macInfoProvisioningUDID = $SPHardwareTypeInfo.provisioning_UDID
 
 		#activation Lock status
-		#$macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[11].Split(":")[1].Trim()
 		$macInfoActivationLockStatus = $SPHardwareTypeInfo.activation_lock_status
 
 		#model name
-		#$macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1].Trim()
 		$macInfoModelName = $SPHardwareTypeInfo.machine_name
 
 		#model Identfier
-		#$macInfoModelID = $macInfoSystemProfilerArrayList[1].Split(":")[1].Trim()
 		$macInfoModelID = $SPHardwareTypeInfo.machine_model
 
 		#model number
-		#$macInfoModelNumber = $macInfoSystemProfilerArrayList[2].Split(":")[1].Trim()
 		$macInfoModelNumber = $SPHardwareTypeInfo.model_number
 
 		#CPU Model
-		#$macInfoCPUName = $macInfoSystemProfilerArrayList[3].Split(":")[1].Trim()
 		$macInfoCPUName = $SPHardwareTypeInfo.chip_type
 
-		#core count. We're going to split ito perf and efficiency
-		#This is a mess to get because it doesn't show in the JSON output
-		$macInfoCPUCoreCount = $macInfoSystemProfilerArrayList[4].Split(":")[1].Trim()
+		#get the core count. We're going to split ito perf and efficiency
+		#This is a mess to get because it doesn't show in the JSON output, although to be fair
+		#unless the JSON data split it up into total, performance, and efficiency in discrete values
+		#the only difference would be we'd not have to run system_profiler again to get the grep'd results
+		
+		#get total number of cores the fast way via grep
+		$macInfoCPUCoreCount = Invoke-Expression "/usr/sbin/system_profiler SPHardwareDataType -detailLevel full|grep `"Total Number of Cores`""
+		
+		#split on the colon, grab the second element of the array Split(":") creates
+		#(with all the good data) and trim leading/trailing whitespace with Trim()
+		$macInfoCPUCoreCount = $macInfoCPUCoreCount.Split(":")[1].Trim()
 
 		#list total cores
 		$macInfoCPUCoreCountTotal = $macInfoCPUCoreCount.Split(" ")[0]
 
 		#get Perf and efficiency cores
+
 		#strip of total core count and leading parens
 		$macInfoCPUCoreCountTemp = $macInfoCPUCoreCount.Split(" (")[1]
+
 		#strip trailing parens from temp
 		$macInfoCPUCoreCountTemp = $macInfoCPUCoreCountTemp.Substring(0,$macInfoCPUCoreCountTemp.Length-1)
+
 		#get performance cores
 		$macInfoCPUPerformanceCoreCount = $macInfoCPUCoreCountTemp.Split(" and ")[0]
+
 		#get efficiency cores
 		$macInfoCPUEfficiencyCoreCount = $macInfoCPUCoreCountTemp.Split(" and ")[1]
 
 		#RAM size
-		$macInfoRAMSize = $macInfoSystemProfilerArrayList[5].Split(":")[1].Trim()
+		$macInfoRAMSize = $SPHardwareTypeInfo.physical_memory
 	} else {
 		#we want to start grabbing items. first we grab the EFI version, aka Boot ROM version. We only want the last part, so
 		#we split on the colon, grab the second part [1]
