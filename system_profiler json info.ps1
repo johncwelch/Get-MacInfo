@@ -4,7 +4,7 @@ function getSPJSONData {
 	)
 	
 	#get raw json data from system_profiler for $SPDataType. This creates an array of strings
-	$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -json"
+	$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -detailLevel full -json"
 	#convert array to one string
 	$SPStringResults = $SPRawResults|Out-String
 	#create JSON object from string
@@ -161,4 +161,67 @@ foreach($entry in $SPPowerTypeNames) {
 		}
 	}
 }
+
+#hardware info testing
+$SPHardwareTypeData = getSPJSONData -SPDataType "SPHardwareDataType"
+$SPHardwareTypeInfo = $SPHardwareTypeData[0].SPHardwareDataType[0]
+
+$macInfoEFIVersion = $SPHardwareTypeInfo.boot_rom_version
+
+#Get the OS Loader Version
+$macInfoSMCVersion = $SPHardwareTypeInfo.os_loader_version
+
+#hardware serial number
+$macInfoHardwareSN = $SPHardwareTypeInfo.serial_number
+
+#hardware UUID
+$macInfoHardwareUUID = $SPHardwareTypeInfo.platform_UUID
+
+#provisioning UUID
+$macInfoProvisioningUDID = $SPHardwareTypeInfo.provisioning_UDID
+
+#activation Lock status
+$macInfoActivationLockStatus = $SPHardwareTypeInfo.activation_lock_status
+
+#model name
+$macInfoModelName = $SPHardwareTypeInfo.machine_name
+
+#model Identfier
+$macInfoModelID = $SPHardwareTypeInfo.machine_model
+
+#model number
+$macInfoModelNumber = $SPHardwareTypeInfo.model_number
+
+#CPU Model
+$macInfoCPUName = $SPHardwareTypeInfo.chip_type
+
+#core count. We're going to split ito perf and efficiency
+#This is a mess to get because it doesn't show in the JSON output
+
+#get total number of cores the fast way via grep
+$macInfoCPUCoreCount = Invoke-Expression "/usr/sbin/system_profiler SPHardwareDataType -detailLevel full|grep `"Total Number of Cores`""
+
+#split on the colon, grab the second element of the array Split(":") creates
+#(with all the good data) and trim leading/trailing whitespace with Trim()
+$macInfoCPUCoreCount = $macInfoCPUCoreCount.Split(":")[1].Trim()
+
+#list total cores
+$macInfoCPUCoreCountTotal = $macInfoCPUCoreCount.Split(" ")[0]
+
+#get Perf and efficiency cores
+
+#strip of total core count and leading parens
+$macInfoCPUCoreCountTemp = $macInfoCPUCoreCount.Split(" (")[1]
+
+#strip trailing parens from temp
+$macInfoCPUCoreCountTemp = $macInfoCPUCoreCountTemp.Substring(0,$macInfoCPUCoreCountTemp.Length-1)
+
+#get performance cores
+$macInfoCPUPerformanceCoreCount = $macInfoCPUCoreCountTemp.Split(" and ")[0]
+
+#get efficiency cores
+$macInfoCPUEfficiencyCoreCount = $macInfoCPUCoreCountTemp.Split(" and ")[1]
+
+#RAM size
+$macInfoRAMSize = $SPHardwareTypeInfo.physical_memory
 
