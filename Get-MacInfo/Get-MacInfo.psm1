@@ -265,16 +265,18 @@ function Get-MacInfo {
 		#we split on the colon, grab the second part [1]
           #trim all the whitespace from [1]
 		#this is actually now referred to as the System Firmware Version, so we'll rename that one day
-		$macInfoEFIVersion = $macInfoSystemProfilerArrayList[10].Split(":")[1].Trim()
+		#get via grep now
+		$macInfoEFIRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType -detailLevel full|grep `"System Firmware Version`""
 
 		#split on the parens and grab the first entry [0] to get rid of the ibridge stuff
           #and get ride of any remaining whitespace
-		$macInfoEFIVersion = $macInfoEFIVersion.Split("(")[0].Trim()
+		$macInfoEFIVersion = $macInfoEFIRaw.Split("(")[0].Trim() 
 
 		#T2 Firmware Version
-		$macInfoT2FirmwareVersion = $macInfoSystemProfilerArrayList[10].Split("(")[1]
+		#split on leading parens to get the ibridge version(T2) info
+		$macInfoT2FirmwareVersion = $macInfoEFIRaw.Split("(")[1]
+		#split on the colon to get just the numbers
 		$macInfoT2FirmwareVersion = $macInfoT2FirmwareVersion.Split(":")[1].Trim()
-		
           #get rid of the last ) character
 		$macInfoT2FirmwareVersion = $macInfoT2FirmwareVersion.Substring(0,$macInfoT2FirmwareVersion.Length-1)
 		
