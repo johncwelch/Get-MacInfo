@@ -183,7 +183,8 @@ function Get-MacInfo {
 	$SPHardwareTypeInfo = $SPHardwareTypeData[0].SPHardwareDataType[0]
 
 	##Apple Silicon Differences
-	#Chip: instead of Processor Name:
+	#Model Number
+	#Chip Type: instead of cpu_type:
 	#No Processor Speed:
 	#No Number of Processors
 	#Total Number of Cores: has more info
@@ -191,31 +192,38 @@ function Get-MacInfo {
 	#No L3 Cache:
 	#No HyperThreading Technology:
 
+	##common SPHardwareType sections
+
+	#Get the OS Loader Version
+	$macInfoSMCVersion = $SPHardwareTypeInfo.os_loader_version
+
+	#hardware serial number
+	$macInfoHardwareSN = $SPHardwareTypeInfo.serial_number
+
+	#hardware UUID
+	$macInfoHardwareUUID = $SPHardwareTypeInfo.platform_UUID
+
+	#provisioning UUID
+	$macInfoProvisioningUDID = $SPHardwareTypeInfo.provisioning_UDID
+
+	#activation Lock status
+	$macInfoActivationLockStatus = $SPHardwareTypeInfo.activation_lock_status
+
+	#model name
+	$macInfoModelName = $SPHardwareTypeInfo.machine_name
+
+	#model Identfier
+	$macInfoModelID = $SPHardwareTypeInfo.machine_model
+
+	#RAM size
+	$macInfoRAMSize = $SPHardwareTypeInfo.physical_memory
+
 	#Apple Silicon Section
 	if($isAppleSilicon) {
+
 		#getthe System Firmware Version
+		#this is slightly different on Intel
 		$macInfoEFIVersion = $SPHardwareTypeInfo.boot_rom_version
-
-		#Get the OS Loader Version
-		$macInfoSMCVersion = $SPHardwareTypeInfo.os_loader_version
-
-		#hardware serial number
-		$macInfoHardwareSN = $SPHardwareTypeInfo.serial_number
-
-		#hardware UUID
-		$macInfoHardwareUUID = $SPHardwareTypeInfo.platform_UUID
-
-		#provisioning UUID
-		$macInfoProvisioningUDID = $SPHardwareTypeInfo.provisioning_UDID
-
-		#activation Lock status
-		$macInfoActivationLockStatus = $SPHardwareTypeInfo.activation_lock_status
-
-		#model name
-		$macInfoModelName = $SPHardwareTypeInfo.machine_name
-
-		#model Identfier
-		$macInfoModelID = $SPHardwareTypeInfo.machine_model
 
 		#model number
 		$macInfoModelNumber = $SPHardwareTypeInfo.model_number
@@ -252,8 +260,6 @@ function Get-MacInfo {
 		#get efficiency cores
 		$macInfoCPUEfficiencyCoreCount = $macInfoCPUCoreCountTemp.Split(" and ")[1]
 
-		#RAM size
-		$macInfoRAMSize = $SPHardwareTypeInfo.physical_memory
 	} else {
 		#we want to start grabbing items. first we grab the EFI version, aka Boot ROM version. We only want the last part, so
 		#we split on the colon, grab the second part [1]
@@ -271,52 +277,33 @@ function Get-MacInfo {
 		
           #get rid of the last ) character
 		$macInfoT2FirmwareVersion = $macInfoT2FirmwareVersion.Substring(0,$macInfoT2FirmwareVersion.Length-1)
-
-		#smc version
-		#now the OS Loader version
-		$macInfoSMCVersion = $macInfoSystemProfilerArrayList[11].Split(":")[1].Trim()
-		
-		#hardware serial number
-		$macInfoHardwareSN = $macInfoSystemProfilerArrayList[12].Split(":")[1].Trim()
-		
-		#hardware UUID
-		$macInfoHardwareUUID = $macInfoSystemProfilerArrayList[13].Split(":")[1].Trim()
-		
-		#provisioning UUID
-		$macInfoProvisioningUDID = $macInfoSystemProfilerArrayList[14].Split(":")[1].Trim()
-		
-		#activation Lock status
-		$macInfoActivationLockStatus = $macInfoSystemProfilerArrayList[15].Split(":")[1].Trim()
-		
-		#model name
-		$macInfoModelName = $macInfoSystemProfilerArrayList[0].Split(":")[1].Trim()
-
-		#model Identfier
-		$macInfoModelID = $macInfoSystemProfilerArrayList[1].Split(":")[1].Trim()
 		
 		#CPU Model
-		$macInfoCPUName = $macInfoSystemProfilerArrayList[2].Split(":")[1].Trim()
+		$macInfoCPUName = $SPHardwareTypeInfo.cpu_type   
 		
 		#CPU Speed
-		$macInfoCPUSpeed = $macInfoSystemProfilerArrayList[3].Split(":")[1].Trim()
+		$macInfoCPUSpeed = $SPHardwareTypeInfo.current_processor_speed 
 		
 		#CPU Count
-		$macInfoCPUCount = $macInfoSystemProfilerArrayList[4].Split(":")[1].Trim()
+		$macInfoCPUCount = $SPHardwareTypeInfo.packages
 		
 		#core count
-		$macInfoCPUCoreCount = $macInfoSystemProfilerArrayList[5].Split(":")[1].Trim()
+		$macInfoCPUCoreCount = $SPHardwareTypeInfo.number_processors
 		
 		#L2 Cache Size
-		$macInfoCPUL2CacheSize = $macInfoSystemProfilerArrayList[6].Split(":")[1].Trim()
+		$macInfoCPUL2CacheSize = $SPHardwareTypeInfo.l2_cache_core
 		
 		#L3 Cache size
-		$macInfoL3CacheSize = $macInfoSystemProfilerArrayList[7].Split(":")[1].Trim()
+		$macInfoL3CacheSize = $SPHardwareTypeInfo.l3_cache
 		
 		#hyperthreading status
-		$macInfoHyperThreadingEnabled = $macInfoSystemProfilerArrayList[8].Split(":")[1].Trim()
+		#not in json, do with grep
+		#get full results
+		$macInfoHyperThreadingRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType -detailLevel full|grep `"Hyper-Threading Technology`""
 		
-		#RAM size
-		$macInfoRAMSize = $macInfoSystemProfilerArrayList[9].Split(":")[1].Trim()
+		#split at the colon, grab the second element in the array that creates with Split(":")
+		#and use Trim() to remove leading trailing whitespace
+		$macInfoHyperThreadingEnabled = $macInfoHyperThreadingRaw.Split(":")[1].Trim()
 	}
 
 	#apple pay info===============================================================================
