@@ -23,7 +23,13 @@ function getSPRawData {
 }
 
 
+$SPApplePayData = getSPJSONData -SPDataType "SPSecureElementDataType"
+#we don't need to care about raw here, there's no difference between ray and JSON output
+$SPApplePayInfo = $SPApplePayData[0].SPSecureElementDataType[0]
+$SPApplePayInfo
+
 $SPHardwareRaw = getSPRawData -SPDataType "SPHardwareDataType"
+
 
 $macInfoCPUCoreCount = $SPHardwareRaw -match "Total Number of Cores"      
 $macInfoCPUCoreCount = $macInfoCPUCoreCount.Split(":")[1].Trim()
