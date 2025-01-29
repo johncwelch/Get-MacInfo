@@ -13,6 +13,26 @@ function getSPJSONData {
 	return $SPJSONResults
 }
 
+function getSPRawData {
+	param (
+		[Parameter(Mandatory = $true)][string] $SPDataType
+	)
+
+	$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -detailLevel full"
+	return $SPRawResults
+}
+
+
+$SPHardwareRaw = getSPRawData -SPDataType "SPHardwareDataType"
+
+$macInfoCPUCoreCount = $SPHardwareRaw -match "Total Number of Cores"      
+$macInfoCPUCoreCount = $macInfoCPUCoreCount.Split(":")[1].Trim()
+$macInfoCPUCoreCountTotal = $macInfoCPUCoreCount.Split(" ")[0]
+$macInfoCPUCoreCountTemp = $macInfoCPUCoreCount.Split(" (")[1]
+$macInfoCPUCoreCountTemp = $macInfoCPUCoreCountTemp.Substring(0,$macInfoCPUCoreCountTemp.Length-1)             
+$macInfoCPUPerformanceCoreCount = $macInfoCPUCoreCountTemp.Split(" and ")[0]
+$macInfoCPUEfficiencyCoreCount = $macInfoCPUCoreCountTemp.Split(" and ")[1]
+
 ##note that we use flags for if there's a battery and/or UPS
 ##we'll test at the "Building the hash table" stage. If either is false, then we don't provide
 ##battery/UPS info
