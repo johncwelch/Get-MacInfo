@@ -20,6 +20,15 @@ function getSPJSONData {
 	return $SPJSONResults
 }
 
+function getSPRawData {
+	param (
+		[Parameter(Mandatory = $true)][string] $SPDataType
+	)
+
+	$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -detailLevel full"
+	return $SPRawResults
+}
+
 function Get-MacInfo {
 	<#
 	.SYNOPSIS
@@ -177,10 +186,14 @@ function Get-MacInfo {
 	#system_profiler section=========================================================
 
 	##now, let's get our system_profiler hardware info
+
 	#use getSPJSONData to get a JSON object for SPHardwareDataType
 	$SPHardwareTypeData = getSPJSONData -SPDataType "SPHardwareDataType"
 	#set up a var that deals with the first two layers of the return
 	$SPHardwareTypeInfo = $SPHardwareTypeData[0].SPHardwareDataType[0]
+
+	#Get the raw data so we can more easily get to the things not in JSON output
+	$SPHardwareRaw = getSPRawData -SPDataType "SPHardwareDataType"
 
 	##Apple Silicon Differences
 	#Model Number
@@ -236,8 +249,10 @@ function Get-MacInfo {
 		#unless the JSON data split it up into total, performance, and efficiency in discrete values
 		#the only difference would be we'd not have to run system_profiler again to get the grep'd results
 		
-		#get total number of cores the fast way via grep
-		$macInfoCPUCoreCount = Invoke-Expression "/usr/sbin/system_profiler SPHardwareDataType -detailLevel full|grep `"Total Number of Cores`""
+		#get the total number of cores string from $SPHardwareDataRaw
+		#this is basically greping the array of strings to find the one we want.
+		#this allows us to only need one call to system_profiler for all the non-json data we'll need for SPHardwareDataType
+		$macInfoCPUCoreCount = $SPHardwareRaw -match "Total Number of Cores" 
 		
 		#split on the colon, grab the second element of the array Split(":") creates
 		#(with all the good data) and trim leading/trailing whitespace with Trim()
@@ -265,8 +280,8 @@ function Get-MacInfo {
 		#we split on the colon, grab the second part [1]
           #trim all the whitespace from [1]
 		#this is actually now referred to as the System Firmware Version, so we'll rename that one day
-		#get via grep now
-		$macInfoEFIRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType -detailLevel full|grep `"System Firmware Version`""
+		#get via match from $SPHardwareRaw
+		$macInfoEFIRaw = $SPHardwareRaw -match "System Firmware Version"
 
 		#split on the parens and grab the first entry [0] to get rid of the ibridge stuff
           #and get ride of any remaining whitespace
@@ -301,7 +316,7 @@ function Get-MacInfo {
 		#hyperthreading status
 		#not in json, do with grep
 		#get full results
-		$macInfoHyperThreadingRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPHardwareDataType -detailLevel full|grep `"Hyper-Threading Technology`""
+		$macInfoHyperThreadingRaw =  $SPHardwareRaw -match "Hyper-Threading Technology"
 		
 		#split at the colon, grab the second element in the array that creates with Split(":")
 		#and use Trim() to remove leading trailing whitespace
