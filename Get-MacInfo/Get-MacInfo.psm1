@@ -436,6 +436,32 @@ function Get-MacInfo {
 
 	#Removed the POST test section, it seems to have completely gone away
 
+	#SPPowerDataTypeNotes
+	#Intel has 
+	##	manufacturer for battery model info
+	##	AC Power
+	##		Wake on AC Changes
+	##		Wake on clamshell open
+	##		Display sleep uses Dim
+	##	Battery Power
+	##		Wake on AC Changes
+	##		Wake on clamshell open
+	##		Display sleep uses Dim
+
+
+
+	#AS has 
+	##	maximum capacity for battery health info
+	##	AC Power
+	##		sleep on power button
+	##		High Power Mode
+	##		Reduce Brightness
+	##	Battery Power
+	##		sleep on power button
+	##		High Power Mode
+	##		Reduce Brightness
+
+
 	#sysctl section===============================================================================
 	$macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
 	$macInfoVMPageFile = Invoke-Expression -Command "/usr/sbin/sysctl -n vm.swapfileprefix"
