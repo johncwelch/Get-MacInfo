@@ -87,11 +87,17 @@ foreach($entry in $SPPowerTypeNames) {
 			$Global:batteryFullyCharged = $batteryChargeInfo.sppower_battery_fully_charged
 			$Global:batteryIsCharging = $batteryChargeInfo.sppower_battery_is_charging
 			$Global:batteryChargeLevel = $batteryChargeInfo.sppower_battery_state_of_charge
+			#if (!($isAppleSilicon)) {
+				$Global:batteryMaxCapacity = $batteryChargeInfo.sppower_battery_max_capacity
+			#}
 
 			$batteryHealthInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_health_info
 			$Global:batteryCycleCount = $batteryHealthInfo.sppower_battery_cycle_count
 			$Global:batteryHealth = $batteryHealthInfo.sppower_battery_health
-			$Global:batteryMaxCapacity = $batteryHealthInfo.sppower_battery_health_maximum_capacity
+			#if ($isAppleSilicon) {
+				$Global:batteryMaxCapacity = $batteryHealthInfo.sppower_battery_health_maximum_capacity
+			#}
+			
 
 			$batteryModelInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_model_info
 			$Global:batterySerialNumber = $batteryModelInfo.sppower_battery_serial_number
@@ -99,7 +105,9 @@ foreach($entry in $SPPowerTypeNames) {
 			$Global:batteryFirmwareVersion = $batteryModelInfo.sppower_battery_firmware_version
 			$Global:batteryHardwareRevision = $batteryModelInfo.sppower_battery_hardware_revision
 			$Global:batteryCellRevision = $batteryModelInfo.sppower_battery_cell_revision
-
+			#if (!($isAppleSilicon)) {
+				$Global:batteryManufacturer = $batteryModelInfo.sppower_battery_manufacturer
+			#}
 		}
 
 		"sppower_information" {
