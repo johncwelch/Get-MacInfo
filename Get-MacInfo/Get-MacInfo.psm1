@@ -373,56 +373,41 @@ function Get-MacInfo {
 	#bluetooth info===============================================================================
 	#get the applepay info from system profiler
 	#Intel doesn't have the product ID
-	$blueToothRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPBluetoothDataType"
 
-	#shove into an arraylist, remove all the blank lines
-	[System.Collections.ArrayList]$blueToothArrayList = $blueToothRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
+	$SPBlueToothData = getSPJSONData -SPDataType "SPBluetoothDataType"
+	$SPBlueToothInfo = $SPBlueToothData[0].SPBluetoothDataType[0].controller_properties
 
-	#remove the first two lines
-	$blueToothArrayList.RemoveRange(0,2)
-
-	#since the BluetoothMAC is colon-delimited, we can't just split on colons like usual
-	#in this case, we're going to blank the leading spaces, then trim on the middle space
-	#blank the leading spaces
-	$blueToothMAC = $blueToothArrayList[0].TrimStart()
-
-	#split on the only remaining space, grab the second element, [1] and remove its whitespace
-	$blueToothMAC = $blueToothMAC.Split(" ")[1].Trim()
+	$blueToothMAC = $SPBlueToothInfo.controller_address
 
 	#get the BT chipset
-	$blueToothChipset = $blueToothArrayList[2].Split(":")[1].Trim()
+	$blueToothChipset = $SPBlueToothInfo.controller_chipset
 
 	#get discoverable status
-	$blueToothDiscoverable = $blueToothArrayList[3].Split(":")[1].Trim()
+	#we have to do a bit of parsing here. The actual value is "atrrib_on" or "attrib_off"
+	#so we split on the "_", then grab the second item in the array created, the actual thing we
+	#care about and Trim() any whitespace that may be there
+	$blueToothDiscoverable = $SPBlueToothInfo.controller_discoverable.Split("_")[1].Trim()
 
 	#get firmware version
-	$bluetoothFirmwareVersion = $blueToothArrayList[4].Split(":")[1].Trim()
+	$bluetoothFirmwareVersion = $SPBlueToothInfo.controller_firmwareVersion
+
+	#supported services end up
+	$bluetoothSupportedServicesRaw = $SPBlueToothInfo.controller_supportedServices
+
+	#get transport
+	$blueToothTransport = $SPBlueToothInfo.controller_transport
+
+	#get vendor ID
+	$blueToothVendorID = $SPBlueToothInfo.controller_vendorID
+
+	#get state ala discoverable status
+	$blueToothState = $SPBlueToothInfo.controller_state.Split("_")[1].Trim()
 
 	#start split between Apple Silicon and Intel
 	
-
 	if($isAppleSilicon) {
 		#product ID
-		$blueToothProductID = $blueToothArrayList[5].Split(":")[1].Trim()
-
-		#supported services end up being weird and Apple Silicon has a one-off difference thanks to product ID
-		$bluetoothSupportedServicesRaw = $blueToothArrayList[6].Split(":")[1].Trim()
-
-		#get transport
-		$blueToothTransport = $blueToothArrayList[7].Split(":")[1].Trim()
-
-		#get vendor ID
-		$blueToothVendorID = $blueToothArrayList[8].Split(":")[1].Trim()
-	
-	} else {
-		#supported services end up being weird and Apple Silicon has a one-off difference thanks to product ID
-		$bluetoothSupportedServicesRaw = $blueToothArrayList[5].Split(":")[1].Trim()
-
-		#get transport
-		$blueToothTransport = $blueToothArrayList[6].Split(":")[1].Trim()
-
-		#get vendor ID
-		$blueToothVendorID = $blueToothArrayList[7].Split(":")[1].Trim()
+		$blueToothProductID = $SPBlueToothInfo.controller_productID
 	}
 
 	##for supported services, we only need the inital block in the if statement, all the rest can live outside
@@ -449,33 +434,7 @@ function Get-MacInfo {
 		$bluetoothSupportedServices.Add($item)|Out-Null
 	}	
 
-	#POST test section============================================================================
-	##Intel Only, the datatype returns nothing on Apple Silicon
-	if(-not $isAppleSilicon) {
-		#get the POST data
-		$POSTInfoRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPDiagnosticsDataType"
-
-		#shove into an array list
-		[System.Collections.ArrayList]$POSTInfoArrayList = $POSTInfoRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
-
-		#remove the first two lines
-		$POSTInfoArrayList.RemoveRange(0,2)
-
-		#trim leading/trailing whitespace from the first entry (date & time)
-		$POSTInfoArrayList[0] = $POSTInfoArrayList[0].Trim()
-
-		#split the date & time on space, this gives us 4 entries
-		[System.Collections.ArrayList]$POSTInfoRunDateArrayList = $POSTInfoArrayList[0].Split(" ")
-
-		#delete the first two entries
-		$POSTInfoRunDateArrayList.RemoveRange(0,2)
-
-		#now build a date & time string with ONLY the date and time
-		$POSTInfoLastRunDate = $POSTInfoRunDateArrayList[0] + " " + $POSTInfoRunDateArrayList[1]
-
-		#now get the last run results
-		$POSTInfoLastRunResults = $POSTInfoArrayList[1].Split(":")[1].Trim()
-	}
+	#Removed the POST test section, it seems to have completely gone away
 
 	#sysctl section===============================================================================
 	$macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
@@ -705,9 +664,6 @@ function Get-MacInfo {
 		$macInfoHash.Add("BluetoothSupportedServices",$bluetoothSupportedServices)
 		$macInfoHash.Add("BluetoothTransport",$blueToothTransport)
 		$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
-		$macInfoHash.Add("        "," ")
-		$macInfoHash.Add("POSTLastRunDate",$POSTInfoLastRunDate) #Intel Only
-		$macInfoHash.Add("POSTLastRunResults",$POSTInfoLastRunResults) #Intel Only
 		$macInfoHash.Add("         "," ")
 		$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
 		$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
