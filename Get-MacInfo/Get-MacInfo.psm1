@@ -325,65 +325,49 @@ function Get-MacInfo {
 
 	#apple pay info===============================================================================
 
-	#get the applepay info from system profiler
-	$applePayInfoArrayRaw = Invoke-Expression -Command "/usr/sbin/system_profiler SPSecureElementDataType"
+	#get JSON applepay data from system profiler
+	$SPApplePayData = getSPJSONData -SPDataType "SPSecureElementDataType"
+	#we don't need to care about raw here, there's no difference between ray and JSON output
+	$SPApplePayInfo = $SPApplePayData[0].SPSecureElementDataType[0]
+
 
 	#shove into an arraylist, remove all the blank lines
-	[System.Collections.ArrayList]$applePayInfoArrayList = $applePayInfoArrayRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
+	#[System.Collections.ArrayList]$applePayInfoArrayList = $applePayInfoArrayRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
 
 	#remove the first two lines that only say "Apple Pay"
-	$applePayInfoArrayList.RemoveRange(0,2)
+	#$applePayInfoArrayList.RemoveRange(0,2)
 
 	#grab the platform ID line, item[0] split it on the :, grab the second element [1]
 	#trim all leading/trailing whitespace from element[1]
-	$applePayInfoPlatformID = $applePayInfoArrayList[0].Split(":")[1].Trim()
+	$applePayInfoPlatformID = $SPApplePayInfo.se_plt
 
 	#get the SEID the same way
-	$applePayInfoSEID = $applePayInfoArrayList[1].Split(":")[1].Trim()
+	$applePayInfoSEID = $SPApplePayInfo.se_id
 
-	#get systemOS SEID, apple Silicon Only and other Apple Silicon specific changes in this one
+	#Hardware
+	$applePayInfoHardware = $SPApplePayInfo.se_hw
+
+	#firmware
+	$applePayInfoFirmware = $SPApplePayInfo.se_fw
+
+	#JCOP OS version
+	$applePayInfoJCOPOSVersion = $SPApplePayInfo.se_os_version
+
+	##Apple Pay Controller Info
+		#hardware version
+		$applePayControllerHardwareVersion = $SPApplePayInfo.ctl_hw
+
+		#firmware version
+		$applePayControllerFirmwareVersion = $SPApplePayInfo.ctl_fw
+
+		#middleWare version
+		$applePayControllerMiddlewareVersion = $SPApplePayInfo.ctl_mw
+
+	#get systemOS SEID, this is the only intel/apple silcon difference
 	if($isAppleSilicon) {
 		#apple Silicon Only
-		$applePayInfoSystemOSSEID = $applePayInfoArrayList[2].Split(":")[1].Trim()
-
-		#Hardware
-		$applePayInfoHardware = $applePayInfoArrayList[6].Split(":")[1].Trim()
-
-		#firmware
-		$applePayInfoFirmware = $applePayInfoArrayList[7].Split(":")[1].Trim()
-
-		#JCOP OS version
-		$applePayInfoJCOPOSVersion = $applePayInfoArrayList[8].Split(":")[1].Trim()
-
-		##Apple Pay Controller Info
-		#hardware version
-		$applePayControllerHardwareVersion = $applePayInfoArrayList[10].Split(":")[1].Trim()
-
-		#firmware version
-		$applePayControllerFirmwareVersion = $applePayInfoArrayList[11].Split(":")[1].Trim()
-
-		#middleWare version
-		$applePayControllerMiddlewareVersion = $applePayInfoArrayList[12].Split(":")[1].Trim()
-	} else {
-		#Intel versions
-		#Hardware
-		$applePayInfoHardware = $applePayInfoArrayList[5].Split(":")[1].Trim()
-
-		#firmware
-		$applePayInfoFirmware = $applePayInfoArrayList[6].Split(":")[1].Trim()
-
-		#JCOP OS version
-		$applePayInfoJCOPOSVersion = $applePayInfoArrayList[7].Split(":")[1].Trim()
-
-		##Apple Pay Controller Info
-		#hardware version
-		$applePayControllerHardwareVersion = $applePayInfoArrayList[9].Split(":")[1].Trim()
-
-		#firmware version
-		$applePayControllerFirmwareVersion = $applePayInfoArrayList[10].Split(":")[1].Trim()
-
-		#middleWare version
-		$applePayControllerMiddlewareVersion = $applePayInfoArrayList[11].Split(":")[1].Trim()
+		#system OS SEID
+		$applePayInfoSystemOSSEID = $SPApplePayInfo.se_os_id	
 	}	
 
 	#bluetooth info===============================================================================
