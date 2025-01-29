@@ -23,10 +23,25 @@ function getSPRawData {
 }
 
 
+$SPBlueToothData = getSPJSONData -SPDataType "SPBluetoothDataType"
+$SPBlueToothInfo = $SPBlueToothData[0].SPBluetoothDataType[0].controller_properties
+$bluetoothSupportedServicesRaw = $SPBlueToothInfo.controller_supportedServices
+[System.Collections.ArrayList]$bluetoothSupportedServices = @()
+$bluetoothSupportedServices.Add($bluetoothSupportedServicesRaw.Split("<")[0].Trim())|Out-Null
+$blueToothTemp = $bluetoothSupportedServicesRaw.Split("<")[1].Trim()
+$blueToothTemp = $blueToothTemp.Substring(0,$blueToothTemp.Length-1)
+$blueToothTemp = $blueToothTemp.Trim()
+$blueToothTempArray = $blueToothTemp.Split(" ")
+
+foreach($item in $blueToothTempArray){
+	$bluetoothSupportedServices.Add($item)|Out-Null
+}
+
+$bluetoothSupportedServices
+
 $SPApplePayData = getSPJSONData -SPDataType "SPSecureElementDataType"
 #we don't need to care about raw here, there's no difference between ray and JSON output
 $SPApplePayInfo = $SPApplePayData[0].SPSecureElementDataType[0]
-$SPApplePayInfo
 
 $SPHardwareRaw = getSPRawData -SPDataType "SPHardwareDataType"
 
