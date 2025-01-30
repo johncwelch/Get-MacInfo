@@ -436,9 +436,13 @@ function Get-MacInfo {
 
 	#Removed the POST test section, it seems to have completely gone away
 
+	#next item, remove redundancies in the hashtable.
+
 	#SPPowerDataTypeNotes
+	#do some checking for AC Charger info
 	#Intel has 
 	##	manufacturer for battery model info
+	##	full charge capacity for battery charge info (sppower_battery_max_capacity)
 	##	AC Power
 	##		Wake on AC Changes
 	##		Wake on clamshell open
@@ -613,6 +617,7 @@ function Get-MacInfo {
 		$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
 		$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
 		$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
+		$macInfoHash.Add("BluetoothState",$blueToothState)
 		$macInfoHash.Add("BluetoothFirmwareVersion",$bluetoothFirmwareVersion)
 		$macInfoHash.Add("BluetoothProductID", $blueToothProductID)
 		$macInfoHash.Add("BluetoothSupportedServices",$bluetoothSupportedServices)
@@ -686,6 +691,7 @@ function Get-MacInfo {
 		$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
 		$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
 		$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
+		$macInfoHash.Add("BluetoothState",$blueToothState)
 		$macInfoHash.Add("BluetoothFirmwareVersion",$bluetoothFirmwareVersion)
 		$macInfoHash.Add("BluetoothSupportedServices",$bluetoothSupportedServices)
 		$macInfoHash.Add("BluetoothTransport",$blueToothTransport)
