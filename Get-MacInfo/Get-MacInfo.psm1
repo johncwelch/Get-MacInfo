@@ -456,7 +456,6 @@ function Get-MacInfo {
 	##	AC Power
 	##		sleep on power button
 	##		High Power Mode
-	##		Reduce Brightness
 	##	Battery Power
 	##		sleep on power button
 	##		High Power Mode
@@ -562,12 +561,38 @@ function Get-MacInfo {
 							$UPSPowerSystemSleepTimer = $item.Split(":")[1].Trim()
 						}
 
-
 					}
 				}
 
 				#Okay, now we have the system sleep timer data. Now we can start looking at Apple Silcon vs. not.
 				#FUUUUUUUUUU
+
+				#set up our common stuff
+				$ACPowerInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].'AC Power'
+				$Global:ACDiskSleepTimer = $ACPowerInfo.'Disk Sleep Timer'
+				$Global:ACDisplaySleepTimer = $ACPowerInfo.'Display Sleep Timer'
+				$Global:ACHibernateMode = $ACPowerInfo.'Hibernate Mode'
+				$Global:ACLowPowerMode = $ACPowerInfo.LowPowerMode
+				$Global:ACNetworkOverSleep = $ACPowerInfo.PrioritizeNetworkReachabilityOverSleep
+				$Global:ACSystemSleepTimer = $ACPowerInfo.'System Sleep Timer'
+				$Global:ACWakeOnLAN = $ACPowerInfo.'Wake On LAN'
+
+				#test to see if the machine is plugged in or not. IF it is, set the current power source var
+				#we set it to null/empty for when we add to the hashtable
+				if(!([string]::IsNullOrEmpty($ACPowerInfo.'Current Power Source'))) {
+					$Global:ACCurrentPowerSource = $ACPowerInfo.'Current Power Source'
+				} else {
+					$Global:ACCurrentPowerSource = ""
+				}
+
+				#apple Silicon section for AC Power
+				if ($isAppleSilicon) {
+					$Global:ACSleepOnPowerButton = $ACPowerInfo.'Sleep On Power Button'
+					$Global:ACHighPowerMode = $ACPowerInfo.HighPowerMode
+				} else {
+					#do this when we're back at home and can ssh to the intel MBP for specific
+					#Property Names
+				}
 
 			}
 		}
