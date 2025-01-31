@@ -94,10 +94,7 @@ foreach($entry in $SPPowerTypeNames) {
 			$batteryHealthInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_health_info
 			$Global:batteryCycleCount = $batteryHealthInfo.sppower_battery_cycle_count
 			$Global:batteryHealth = $batteryHealthInfo.sppower_battery_health
-			#if ($isAppleSilicon) {
-				$Global:batteryMaxCapacity = $batteryHealthInfo.sppower_battery_health_maximum_capacity
-			#}
-			
+			$Global:batteryMaxCapacity = $batteryHealthInfo.sppower_battery_health_maximum_capacity
 
 			$batteryModelInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_model_info
 			$Global:batterySerialNumber = $batteryModelInfo.sppower_battery_serial_number

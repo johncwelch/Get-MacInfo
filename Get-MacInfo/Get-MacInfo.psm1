@@ -480,6 +480,12 @@ function Get-MacInfo {
 	$Global:hasBattery = $false
 	$Global:hasUPS = $false
 
+	#Globals for the system sleep timers. we can check for nulls to see if we use them
+	$Global:ACPowerSystemSleepTimer = ""
+	$Global:BatteryPowerSystemSleepTimer = ""
+	$Global:UPSPowerSystemSleepTimer
+
+
 	#we use globals here because scope issues can be tricky and are HARD to manager.
 	foreach($entry in $SPPowerTypeNames) {
 		#the index is important in doing this, since it may or may not be different. saves some work
@@ -519,6 +525,50 @@ function Get-MacInfo {
 				if (!($isAppleSilicon)) {
 					$Global:batteryManufacturer = $batteryModelInfo.sppower_battery_manufacturer
 				}
+			}
+
+			"sppower_information" {
+				#so fun fact, system sleep timer doesn't show in JSON because fuque you, that's why
+				#ALSO, it uses the same name for system sleep timer for all entries, so we have to 
+				#do some fun looping and parsing
+
+				#get the raw power data
+				$SPPowerTypeDataRaw = getSPRawData -SPDataType "SPPowerDataType"
+
+				#iterate through the array
+				foreach ($item in $SPPowerTypeDataRaw) {
+					#get the index of the item
+					$theIndex = [array]::IndexOf($SPPowerTypeDataRaw,$item)
+
+					#check for "System Sleep Timer"
+					if($item -match "System Sleep Timer") {
+						#so now to not guess, the way this all comes out is the entry immediately above
+						#the entry with the system sleep timer is the power type, so AC/Battery/UPS
+						#so when we have a match, we have to check what the content of the preceding line is
+						#to know what type of system sleep timer it is. Yes, this is fragile, but probably
+						#less fragile than hoping on the order of things in this.
+
+						#the index of the previous line to $item
+						$theTypeIndex = $theIndex - 1
+						#The item at that index, the type of timer
+						$theType = $SPPowerTypeDataRaw[$theTypeIndex]
+
+						#doing this as elseifs, because we don't really want a default
+						if ($theType -match "AC Power") {
+							$ACPowerSystemSleepTimer = $item.Split(":")[1].Trim()
+						} elseif ($theType -match "Battery Power") {
+							$BatteryPowerSystemSleepTimer = $item.Split(":")[1].Trim()
+						} elseif ($theType -match "UPS Power") {
+							$UPSPowerSystemSleepTimer = $item.Split(":")[1].Trim()
+						}
+
+
+					}
+				}
+
+				#Okay, now we have the system sleep timer data. Now we can start looking at Apple Silcon vs. not.
+				#FUUUUUUUUUU
+
 			}
 		}
 
