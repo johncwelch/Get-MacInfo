@@ -462,6 +462,67 @@ function Get-MacInfo {
 	##		High Power Mode
 	##		Reduce Brightness
 
+	#get full output of SPPowerDataType as JSON
+	#because of how this works, we'll have to do this as a loop testing section names, AND deal with intel/AS differences
+	#oh yey
+	$SPPowerTypeData = getSPJSONData -SPDataType "SPPowerDataType"
+
+	#get number of items in the collection, may end up not needing
+	$SPPowerTypeDataCount = $SPPowerTypeData.SPPowerDataType.Count
+
+	#Get list of section names
+	$SPPowerTypeNames = $SPPowerTypeData[0].SPPowerDataType._name
+
+	#set up flags to check for battery/UPS
+	#every mac always has AC Power, but they don't all have batteries and/or UPS's
+
+	#global flag vars. yes I know, global vars bad, whatevs
+	$Global:hasBattery = $false
+	$Global:hasUPS = $false
+
+	#we use globals here because scope issues can be tricky and are HARD to manager.
+	foreach($entry in $SPPowerTypeNames) {
+		#the index is important in doing this, since it may or may not be different. saves some work
+		$theIndex = [array]::IndexOf($SPPowerTypeNames,$entry)
+
+		#switch-case to manage this
+		switch ($entry) {
+
+			"spbattery_information" {
+				#has a battery if this exists, set $hasBattery to true
+				$hasBattery = $true
+				#get all three battery information items
+				#battery Charge Info
+				$batteryChargeInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_charge_info
+				$Global:batteryWarningLevel = $batteryChargeInfo.sppower_battery_at_warn_level
+				$Global:batteryFullyCharged = $batteryChargeInfo.sppower_battery_fully_charged
+				$Global:batteryIsCharging = $batteryChargeInfo.sppower_battery_is_charging
+				$Global:batteryChargeLevel = $batteryChargeInfo.sppower_battery_state_of_charge
+				#Intel-only value
+				if (!($isAppleSilicon)) {
+					$Global:batteryMaxCapacity = $batteryChargeInfo.sppower_battery_max_capacity
+				}
+
+				#battery health info, same for both arch's
+				$batteryHealthInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_health_info
+				$Global:batteryCycleCount = $batteryHealthInfo.sppower_battery_cycle_count
+				$Global:batteryHealth = $batteryHealthInfo.sppower_battery_health
+				$Global:batteryMaxCapacity = $batteryHealthInfo.sppower_battery_health_maximum_capacity
+
+				#battery model info
+				$batteryModelInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_model_info
+				$Global:batterySerialNumber = $batteryModelInfo.sppower_battery_serial_number
+				$Global:batteryDeviceName = $batteryModelInfo.sppower_battery_device_name
+				$Global:batteryFirmwareVersion = $batteryModelInfo.sppower_battery_firmware_version
+				$Global:batteryHardwareRevision = $batteryModelInfo.sppower_battery_hardware_revision
+				$Global:batteryCellRevision = $batteryModelInfo.sppower_battery_cell_revision
+				if (!($isAppleSilicon)) {
+					$Global:batteryManufacturer = $batteryModelInfo.sppower_battery_manufacturer
+				}
+			}
+		}
+
+	}
 
 	#sysctl section===============================================================================
 	$macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
