@@ -433,8 +433,7 @@ function Get-MacInfo {
 	}	
 
 	#Removed the POST test section, it seems to have completely gone away
-
-	#next item, remove redundancies in the hashtable.
+	#Removed redundancies in the hashtable.
 
 	#SPPowerDataTypeNotes
 	#do some checking for AC Charger info
