@@ -670,7 +670,8 @@ function Get-MacInfo {
 		$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
 		$macInfoHash.Add("         "," ")
 	}
-		
+	
+	#more common elements. The order matters
 	$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
 	$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
 	$macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
