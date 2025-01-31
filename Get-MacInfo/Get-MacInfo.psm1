@@ -52,7 +52,7 @@ function Get-MacInfo {
 	macOSProductName
 	macOSDarwinVersion
 	SystemFirmwareVersion
-	T2FirmwareVersion (currently Intel only as a separate thing in system profiler SPHardwareDataType)
+	T2FirmwareVersion (Intel only)
 	OSLoaderVersion
 	HardwareSerialNumber
 	HardwareUUID
@@ -91,8 +91,6 @@ function Get-MacInfo {
 	BluetoothSupportedServices
 	BluetoothTransport
 	BluetoothVendorID
-	POSTLastRunDate (Intel Only)
-	POSTLastRunResults (Intel Only)
 	AppMemoryUsedGB
 	VMPageFile
 	VMSwapInUseGB
