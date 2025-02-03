@@ -4,12 +4,12 @@
 ## To do:
 	#app-sso output
 	#SPAudioDataType
-	
+
 function getSPJSONData {
 	param (
 		[Parameter(Mandatory = $true)][string] $SPDataType
 	)
-	
+
 	#get raw json data from system_profiler for $SPDataType. This creates an array of strings
 	$SPRawResults = Invoke-Expression -Command "/usr/sbin/system_profiler $SPDataType -detailLevel full -json"
 	#convert array to one string
@@ -246,12 +246,12 @@ function Get-MacInfo {
 		#This is a mess to get because it doesn't show in the JSON output, although to be fair
 		#unless the JSON data split it up into total, performance, and efficiency in discrete values
 		#the only difference would be we'd not have to run system_profiler again to get the grep'd results
-		
+
 		#get the total number of cores string from $SPHardwareDataRaw
 		#this is basically greping the array of strings to find the one we want.
 		#this allows us to only need one call to system_profiler for all the non-json data we'll need for SPHardwareDataType
-		$macInfoCPUCoreCount = $SPHardwareRaw -match "Total Number of Cores" 
-		
+		$macInfoCPUCoreCount = $SPHardwareRaw -match "Total Number of Cores"
+
 		#split on the colon, grab the second element of the array Split(":") creates
 		#(with all the good data) and trim leading/trailing whitespace with Trim()
 		$macInfoCPUCoreCount = $macInfoCPUCoreCount.Split(":")[1].Trim()
@@ -283,7 +283,7 @@ function Get-MacInfo {
 
 		#split on the parens and grab the first entry [0] to get rid of the ibridge stuff
           #and get ride of any remaining whitespace
-		$macInfoEFIVersion = $macInfoEFIRaw.Split("(")[0].Trim() 
+		$macInfoEFIVersion = $macInfoEFIRaw.Split("(")[0].Trim()
 
 		#T2 Firmware Version
 		#split on leading parens to get the ibridge version(T2) info
@@ -292,30 +292,30 @@ function Get-MacInfo {
 		$macInfoT2FirmwareVersion = $macInfoT2FirmwareVersion.Split(":")[1].Trim()
           #get rid of the last ) character
 		$macInfoT2FirmwareVersion = $macInfoT2FirmwareVersion.Substring(0,$macInfoT2FirmwareVersion.Length-1)
-		
+
 		#CPU Model
-		$macInfoCPUName = $SPHardwareTypeInfo.cpu_type   
-		
+		$macInfoCPUName = $SPHardwareTypeInfo.cpu_type
+
 		#CPU Speed
-		$macInfoCPUSpeed = $SPHardwareTypeInfo.current_processor_speed 
-		
+		$macInfoCPUSpeed = $SPHardwareTypeInfo.current_processor_speed
+
 		#CPU Count
 		$macInfoCPUCount = $SPHardwareTypeInfo.packages
-		
+
 		#core count
 		$macInfoCPUCoreCount = $SPHardwareTypeInfo.number_processors
-		
+
 		#L2 Cache Size
 		$macInfoCPUL2CacheSize = $SPHardwareTypeInfo.l2_cache_core
-		
+
 		#L3 Cache size
 		$macInfoL3CacheSize = $SPHardwareTypeInfo.l3_cache
-		
+
 		#hyperthreading status
 		#not in json, do with grep
 		#get full results
 		$macInfoHyperThreadingRaw =  $SPHardwareRaw -match "Hyper-Threading Technology"
-		
+
 		#split at the colon, grab the second element in the array that creates with Split(":")
 		#and use Trim() to remove leading trailing whitespace
 		$macInfoHyperThreadingEnabled = $macInfoHyperThreadingRaw.Split(":")[1].Trim()
@@ -365,8 +365,8 @@ function Get-MacInfo {
 	if($isAppleSilicon) {
 		#apple Silicon Only
 		#system OS SEID
-		$applePayInfoSystemOSSEID = $SPApplePayInfo.se_os_id	
-	}	
+		$applePayInfoSystemOSSEID = $SPApplePayInfo.se_os_id
+	}
 
 	#bluetooth info===============================================================================
 	#get the applepay info from system profiler
@@ -402,7 +402,7 @@ function Get-MacInfo {
 	$blueToothState = $SPBlueToothInfo.controller_state.Split("_")[1].Trim()
 
 	#start split between Apple Silicon and Intel
-	
+
 	if($isAppleSilicon) {
 		#product ID
 		$blueToothProductID = $SPBlueToothInfo.controller_productID
@@ -430,14 +430,14 @@ function Get-MacInfo {
 	#add them onto the backend of the arraylist which we can then shove in the hashlist
 	foreach($item in $blueToothTempArray){
 		$bluetoothSupportedServices.Add($item)|Out-Null
-	}	
+	}
 
 	#Removed the POST test section, it seems to have completely gone away
 	#Removed redundancies in the hashtable.
 
 	#SPPowerDataTypeNotes
 	#do some checking for AC Charger info
-	#Intel has 
+	#Intel has
 	##	manufacturer for battery model info
 	##	full charge capacity for battery charge info (sppower_battery_max_capacity)
 	##	AC Power
@@ -449,9 +449,7 @@ function Get-MacInfo {
 	##		Wake on clamshell open
 	##		Display sleep uses Dim
 
-
-
-	#AS has 
+	#AS has
 	##	maximum capacity for battery health info
 	##	AC Power
 	##		sleep on power button
@@ -510,7 +508,7 @@ function Get-MacInfo {
 				if ($isAppleSilicon) {
 					$Global:batteryHealthMaxCapacity = $batteryHealthInfo.sppower_battery_health_maximum_capacity
 				}
-				
+
 				#battery model info
 				$batteryModelInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_model_info
 				$Global:batterySerialNumber = $batteryModelInfo.sppower_battery_serial_number
@@ -655,7 +653,7 @@ function Get-MacInfo {
 				$Global:ACChargerSerialNumber = $ACChargerInfo.sppower_ac_charger_serial_number #only for apple chargers
 				$Global:ACChargerWatts = $ACChargerInfo.sppower_ac_charger_watts
 				$Global:ACChargerManf = $ACChargerInfo.sppower_ac_charger_manufacturer #only for apple chargers
-				$Global:ACChargerID = $ACChargerInfo.sppower_ac_charger_ID 
+				$Global:ACChargerID = $ACChargerInfo.sppower_ac_charger_ID
 				$Global:ACChargerHWVers = $ACChargerInfo.sppower_ac_charger_hardware_version #only for apple chargers
 				$Global:ACChargerFirmwareVers = $ACChargerInfo.sppower_ac_charger_firmware_version #only for apple chargers
 				$Global:ACChargerFamily = $ACChargerInfo.sppower_ac_charger_family #this may be dependent on charger
@@ -714,7 +712,7 @@ function Get-MacInfo {
 	#get last word of return of first line of array which has on/off
      #and trim trailing period
 	$macInfoFileVaultStatus = $macInfoFileVaultStatusArray[0].Split(" ")[-1].TrimEnd(".")
-	
+
 	#DNS host name
 	$macInfoDNSHostNameTest = Invoke-Expression -Command "/usr/sbin/scutil --get HostName"
 	#we want to test for null or empty so we can have a default value just in case
@@ -774,7 +772,7 @@ function Get-MacInfo {
 	$csrutilStatus = $csrutilStatus.Substring(0,$csrutilStatus.Length-1)
 
 	##hashtable build, we deal with arch versions inline. It's not harder to read
-	##and gets rid of a LOT of duplication. 
+	##and gets rid of a LOT of duplication.
 
 	##the reason for the ever-increasing spaces in the blank lines is to avoid duplication of "names"
 	##which are no-nos for hashtables.
@@ -820,7 +818,7 @@ function Get-MacInfo {
 		$macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled) #Intel Only
 	}
 	$macInfoHash.Add("      "," ")
-	
+
 	$macInfoHash.Add("ApplePayPlatformID", $applePayInfoPlatformID)
 	$macInfoHash.Add("ApplePaySEID", $applePayInfoSEID)
 	if ($isAppleSilicon) {
@@ -833,7 +831,7 @@ function Get-MacInfo {
 	$macInfoHash.Add("ApplePayControllerFirmwareVersion", $applePayControllerFirmwareVersion)
 	$macInfoHash.Add("ApplePayControllerMiddlewareVersion", $applePayControllerMiddlewareVersion)
 	$macInfoHash.Add("       "," ")
-	
+
 	$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
 	$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
 	$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
@@ -1007,11 +1005,14 @@ function Get-MacInfo {
 }
 
 Export-ModuleMember -Function Get-MacInfo
+
+
+
 # SIG # Begin signature block
 # MIIMgAYJKoZIhvcNAQcCoIIMcTCCDG0CAQMxDTALBglghkgBZQMEAgEwewYKKwYB
 # BAGCNwIBBKBtBGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC2MBK7LiSrWT9e
-# Ar2i1Yo07GoirP58lTcFrci37DYDx6CCCaswggQEMIIC7KADAgECAggYeqmowpYh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCApPuCjcaHnkEo3
+# AM9SfIRXunVyh37ZA/KtDmPDKiZnCKCCCaswggQEMIIC7KADAgECAggYeqmowpYh
 # DDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzETMBEGA1UEChMKQXBwbGUg
 # SW5jLjEmMCQGA1UECxMdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxFjAU
 # BgNVBAMTDUFwcGxlIFJvb3QgQ0EwHhcNMTIwMjAxMjIxMjE1WhcNMjcwMjAxMjIx
@@ -1068,11 +1069,11 @@ Export-ModuleMember -Function Get-MacInfo
 # b24gQXV0aG9yaXR5MRMwEQYDVQQKDApBcHBsZSBJbmMuMQswCQYDVQQGEwJVUwII
 # Bh5mm1/XjiowCwYJYIZIAWUDBAIBoHwwEAYKKwYBBAGCNwIBDDECMAAwGQYJKoZI
 # hvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcC
-# ARUwLwYJKoZIhvcNAQkEMSIEIK/CqFsV9IJhBaeWe1nIMtghj+lwOFAAlJfEVkaw
-# 3DPeMAsGCSqGSIb3DQEBAQSCAQCE/I2V3/ArSJwLln7y28PrN6y3qVpKfF8x8frg
-# KgwWUMRwbd50RKFTmQm7e6/eWduaKs4Y2Vd0RbPsWBLFArKEO35Jc4H/gHNtDbwf
-# 0NnSfZFl87MNsHBfLflO1PJbbXTqgnEglMwZGVoQUB2QWqnIabhb92poBC1UV2d6
-# 5FnV8QF8jmvq+5728lhaH9USWvDZbRRNfI8Fki3ozkzCqf1E3G2aU2UT+3JoNcO4
-# ROapBE2dVtC7dsiss8h1lnqd/D0ddZf+LB+3hzg7+NkIpaiUcYk/Ru2DcjPB4WCj
-# 9OWJD4Ixh6PU0p/BrFKmyyiH4009yTzGFEKEeITGlmZHfZ+C
+# ARUwLwYJKoZIhvcNAQkEMSIEIBkmzAzJfBtgP9ydyNX4q3Mm1W6giyf4xwbaLSTk
+# je3KMAsGCSqGSIb3DQEBAQSCAQBdiCZ6QUUVqEgHY5EtS8HQ2ufHYGozBjWzSJ4r
+# 575rTfLBfYMksvVoHhyL4Re4wERVq4jakwjEwXvQpI08+DL+sqh4KzEzG0J83x9q
+# oyEpmz7M5vPaTNV2+tlfGs9SlvQ9oRZTehXfm9rOz+fxiIb4v7SKHvt6K+t1SdGV
+# LZ4ctDXtat00Ma8C2hOGi8ortKZcnifRQt72HKz8p0OB1V2jdhIEEhoIgmTAt6YW
+# oSj3SNC++HL/U9TfHx15l1YZwr5jXPu4P7P+57p2eXwB15CAkrQaVRD8ETEYF5K9
+# m/RbB3e7rl2tZge4DMHC3s6MlUfV+9NnOuvuycNfARBBBjtc
 # SIG # End signature block
