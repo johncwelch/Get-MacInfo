@@ -99,11 +99,11 @@ function Get-MacInfo {
 	ACLowPowerMode
 	ACNetworkOverSleep
 	ACWakeOnLan
-	ACHighPowerMode
-	ACSleepOnPowerButton
-	ACDisplaySleepUsesDim
-	ACWakeOnACChange
-	ACWakeOnClamshellOpen
+	ACHighPowerMode (Apple Silicon Only)
+	ACSleepOnPowerButton (Apple Silicon Only)
+	ACDisplaySleepUsesDim (Intel Only)
+	ACWakeOnACChange (Intel Only)
+	ACWakeOnClamshellOpen (Intel Only)
 	ACChargerConnected
 	ACChargerCharging
 	ACChargerName
@@ -123,19 +123,25 @@ function Get-MacInfo {
 	batteryLowPowerMode
 	batteryNetworkOverSleep
 	batteryWakeOnLan
-	batteryHighPowerMode
-	batterySleepOnPowerButton
-	batteryDisplaySleepUsesDim
-	batteryWakeOnACChange
-	batteryWakeOnClamshellOpen
+	batteryHighPowerMode (Apple Silicon Only)
+	batterySleepOnPowerButton (Apple Silicon Only)
+	batteryDisplaySleepUsesDim (Intel Only)
+	batteryWakeOnACChange (Intel Only)
+	batteryWakeOnClamshellOpen (Intel Only)
 	batteryWarningLevel
 	batteryFullyCharged
 	batteryIsCharging
 	batteryChargeLevel
-	batteryMaxChargeCapacity
+	batteryMaxChargeCapacity (Intel Only)
 	batteryCycleCount
 	batteryHealth
-	batteryHealthMaxCapacity
+	batteryHealthMaxCapacity (Apple Silicon Only)
+	batterySerialNumber
+	batteryDeviceName
+	batteryFirmwareVersion
+	batteryHardwareRevision
+	batteryCellRevision
+	batteryManufacturer (Intel Only)
 	UPSCurrentPowerSource
 	UPSSystemSleepTimer
 	UPSAutoRestartOnPowerLoss
@@ -143,7 +149,7 @@ function Get-MacInfo {
 	UPSDisplaySleepTimer
 	UPSNetworkOverSleep
 	UPSWakeOnLan
-	UPSSleepOnPowerButton
+	UPSSleepOnPowerButton (Apple Silicon Only)
 	AppMemoryUsedGB
 	VMPageFile
 	VMSwapInUseGB
@@ -1060,12 +1066,11 @@ function Get-MacInfo {
 Export-ModuleMember -Function Get-MacInfo
 
 
-
 # SIG # Begin signature block
 # MIIMgAYJKoZIhvcNAQcCoIIMcTCCDG0CAQMxDTALBglghkgBZQMEAgEwewYKKwYB
 # BAGCNwIBBKBtBGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDr99oYvV4h1WXT
-# o9YeRqnSlo+6UMl4JjxChE4Rsox2k6CCCaswggQEMIIC7KADAgECAggYeqmowpYh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAI4kxy6qeXRzSe
+# kt/3L8TajVMwqOLz2/raL8/++os8zaCCCaswggQEMIIC7KADAgECAggYeqmowpYh
 # DDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzETMBEGA1UEChMKQXBwbGUg
 # SW5jLjEmMCQGA1UECxMdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxFjAU
 # BgNVBAMTDUFwcGxlIFJvb3QgQ0EwHhcNMTIwMjAxMjIxMjE1WhcNMjcwMjAxMjIx
@@ -1122,11 +1127,11 @@ Export-ModuleMember -Function Get-MacInfo
 # b24gQXV0aG9yaXR5MRMwEQYDVQQKDApBcHBsZSBJbmMuMQswCQYDVQQGEwJVUwII
 # Bh5mm1/XjiowCwYJYIZIAWUDBAIBoHwwEAYKKwYBBAGCNwIBDDECMAAwGQYJKoZI
 # hvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcC
-# ARUwLwYJKoZIhvcNAQkEMSIEIHJfSybKQt91WB0bvUINdYLsxfd9WCRxTNxXgPve
-# l4rJMAsGCSqGSIb3DQEBAQSCAQBs1/K5l2HsqFoeQ0/dAKueD1Z0q8PB3ljdvj+J
-# Ci3hsFolEnnedHqV5rG9rQSFXCwzyk2EW8PiQZwLf7A05tndehsfQuGzMMGXkezZ
-# RU6Yz43dnGTKvY30fn5tBvaOAJE3ZgPO+RwovOrrO8y4optyZT2rvWtw6GYcW0wk
-# mzzkmc38l9h5Jm9y7CKU6mFzVYiPLkff979n5IfxDRuWt3MSJWIii3h+W0DwUuBW
-# LIFlwKzZrmap6VU6zQzilXEqsoOjjvTH+GOtR4vSTsIokiDSV3G6SQ/3A+jp9Am4
-# 9Rxb0gjQ927vUBICh5q/UdxGNdWrowpmk+4T0EOIt1eEnnAO
+# ARUwLwYJKoZIhvcNAQkEMSIEIIJXp3+PjrYKIOIHDVmVhsj8WGI6mLgN6028Ajk6
+# 3UrYMAsGCSqGSIb3DQEBAQSCAQBwlEQU+2iHEI+LvvVhAocmnWi7mQKT0jNOU+L8
+# 3KimVjo75vXMbKtBb84vM+2e8kPYkhfQPZTby8PfNYAvLxTiRWf1fVjR2F/f4rcu
+# JX2ADnmc0c/SVpxpayqByVnlYGDoCxeJfAyyjsu4j+FTV1k8EcvxHcvc5M+vg5U9
+# HOr8JPcwEeqchQcWNUtZU+Kf56yO+o8/LEUWriyxlDAzm/hZnRgDaqgoAnhkltha
+# ZmcW7YacrrMW+1Lq38pVX2hRkTHeSUlClvGAID5ylPP0ZTwDFlkIqv+SGr+ZGK4G
+# XhOF2bLeimfrVWt03R+veY1f1cZdmocN0SVqHQKc6lcm3DC6
 # SIG # End signature block
