@@ -527,45 +527,6 @@ function Get-MacInfo {
 			}
 
 			"sppower_information" {
-				#so fun fact, system sleep timer doesn't show in JSON because fuque you, that's why
-				#ALSO, it uses the same name for system sleep timer for all entries, so we have to 
-				#do some fun looping and parsing
-
-				#get the raw power data
-				$SPPowerTypeDataRaw = getSPRawData -SPDataType "SPPowerDataType"
-
-				#iterate through the array
-				foreach ($item in $SPPowerTypeDataRaw) {
-					#get the index of the item
-					$theIndex = [array]::IndexOf($SPPowerTypeDataRaw,$item)
-
-					#check for "System Sleep Timer"
-					if($item -match "System Sleep Timer") {
-						#so now to not guess, the way this all comes out is the entry immediately above
-						#the entry with the system sleep timer is the power type, so AC/Battery/UPS
-						#so when we have a match, we have to check what the content of the preceding line is
-						#to know what type of system sleep timer it is. Yes, this is fragile, but probably
-						#less fragile than hoping on the order of things in this.
-
-						#the index of the previous line to $item
-						$theTypeIndex = $theIndex - 1
-						#The item at that index, the type of timer
-						$theType = $SPPowerTypeDataRaw[$theTypeIndex]
-
-						#doing this as elseifs, because we don't really want a default
-						if ($theType -match "AC Power") {
-							$ACPowerSystemSleepTimer = $item.Split(":")[1].Trim()
-						} elseif ($theType -match "Battery Power") {
-							$BatteryPowerSystemSleepTimer = $item.Split(":")[1].Trim()
-						} elseif ($theType -match "UPS Power") {
-							$UPSPowerSystemSleepTimer = $item.Split(":")[1].Trim()
-						}
-
-					}
-				}
-
-				#Okay, now we have the system sleep timer data. Now we can start looking at Apple Silcon vs. not.
-				#FUUUUUUUUUU
 
 				#We can always assume AC power exists
 				#set up our common stuff
@@ -676,7 +637,24 @@ function Get-MacInfo {
 				#SPPowerDataType[$theIndex]
 
 				#Also note that depending on the charger the computer is plugged into,
-				#much of these may be null
+				#much of these may be null. We can check when we build the hash. They're all strings
+				#so easy enough
+				$ACChargerInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex]
+
+				#these exist, even when on battery
+				$Global:ACChargerConnected = $ACChargerInfo.sppower_battery_charger_connected #false when on battery, use as check
+				$Global:ACChargerCharging = $ACChargerInfo.sppower_battery_is_charging #this and connected are only items when not plugged in
+
+				#there doesn't seem to be any architectural difference here, just charger differences
+				$Global:ACChargerName = $ACChargerInfo.sppower_ac_charger_name #only for apple chargers
+				$Global:ACChargerSerialNumber = $ACChargerInfo.sppower_ac_charger_serial_number #only for apple chargers
+				$Global:ACChargerWatts = $ACChargerInfo.sppower_ac_charger_watts
+				$Global:ACChargerManf = $ACChargerInfo.sppower_ac_charger_manufacturer #only for apple chargers
+				$Global:ACChargerID = $ACChargerInfo.sppower_ac_charger_ID 
+				$Global:ACChargerHWVers = $ACChargerInfo.sppower_ac_charger_hardware_version #only for apple chargers
+				$Global:ACChargerFirmwareVers = $ACChargerInfo.sppower_ac_charger_firmware_version #only for apple chargers
+				$Global:ACChargerFamily = $ACChargerInfo.sppower_ac_charger_family #this may be dependent on charger
+
 			}
 		}
 
@@ -886,7 +864,7 @@ function Get-MacInfo {
 		$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
 		$macInfoHash.Add("         "," ")
 	}
-	
+
 	#more common elements. The order matters
 	$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
 	$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
@@ -911,6 +889,9 @@ function Get-MacInfo {
 	$macInfoHash.Add("CurrentDateTime", $macInfoCurrentDate)
 	$macInfoHash.Add("LastBootDateTime", $macInfoLastBoot)
 	$macInfoHash.Add("Uptime", $macInfoUptime)
+	$macInfoHash.Add("              "," ")
+
+	#Power Info
 	
 
 	#so we want the hashtable to be filled before we even care about what the person asked for. This is lazy as hell, to be sure, but,
