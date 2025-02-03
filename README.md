@@ -53,8 +53,65 @@ BluetoothProductID (Apple Silicon Only)
 BluetoothSupportedServices  
 BluetoothTransport  
 BluetoothVendorID  
-POSTLastRunDate (Intel Only)  
-POSTLastRunResults (Intel Only)  
+ACCurrentPowerSource  
+ACSystemSleepTimer  
+ACDiskSleepTImer  
+ACDisplaySleepTimer  
+ACHibernateMode  
+ACLowPowerMode  
+ACNetworkOverSleep  
+ACWakeOnLan  
+ACHighPowerMode (Apple Silicon Only)  
+ACSleepOnPowerButton (Apple Silicon Only)  
+ACDisplaySleepUsesDim (Intel Only)  
+ACWakeOnACChange (Intel Only)  
+ACWakeOnClamshellOpen (Intel Only)  
+ACChargerConnected  
+ACChargerCharging  
+ACChargerName  
+ACChargerSerialNumber  
+ACChargerWatts  
+ACChargerManf  
+ACChargerID  
+ACChargerHWVers  
+ACChargerFirmwareVers  
+ACChargerFamily  
+batteryCurrentPowerSource  
+batterySystemSleepTimer  
+batteryDiskSleepTimer  
+batteryDisplaySleepTimer  
+batteryReduceBrightness  
+batteryHibernateMode  
+batteryLowPowerMode  
+batteryNetworkOverSleep  
+batteryWakeOnLan  
+batteryHighPowerMode (Apple Silicon Only)  
+batterySleepOnPowerButton (Apple Silicon Only)  
+batteryDisplaySleepUsesDim (Intel Only)  
+batteryWakeOnACChange (Intel Only)  
+batteryWakeOnClamshellOpen (Intel Only)  
+batteryWarningLevel  
+batteryFullyCharged  
+batteryIsCharging  
+batteryChargeLevel  
+batteryMaxChargeCapacity (Intel Only)  
+batteryCycleCount  
+batteryHealth  
+batteryHealthMaxCapacity (Apple Silicon Only)  
+batterySerialNumber  
+batteryDeviceName  
+batteryFirmwareVersion  
+batteryHardwareRevision  
+batteryCellRevision  
+batteryManufacturer (Intel Only)  
+UPSCurrentPowerSource  
+UPSSystemSleepTimer  
+UPSAutoRestartOnPowerLoss  
+UPSDiskSleepTimer  
+UPSDisplaySleepTimer  
+UPSNetworkOverSleep  
+UPSWakeOnLan  
+UPSSleepOnPowerButton (Apple Silicon Only)  
 AppMemoryUsedGB  
 VMPageFile  
 VMSwapInUseGB  
