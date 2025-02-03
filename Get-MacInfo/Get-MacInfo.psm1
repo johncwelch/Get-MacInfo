@@ -820,6 +820,7 @@ function Get-MacInfo {
 		$macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled) #Intel Only
 	}
 	$macInfoHash.Add("      "," ")
+	
 	$macInfoHash.Add("ApplePayPlatformID", $applePayInfoPlatformID)
 	$macInfoHash.Add("ApplePaySEID", $applePayInfoSEID)
 	if ($isAppleSilicon) {
@@ -832,6 +833,7 @@ function Get-MacInfo {
 	$macInfoHash.Add("ApplePayControllerFirmwareVersion", $applePayControllerFirmwareVersion)
 	$macInfoHash.Add("ApplePayControllerMiddlewareVersion", $applePayControllerMiddlewareVersion)
 	$macInfoHash.Add("       "," ")
+	
 	$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
 	$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
 	$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
@@ -883,7 +885,7 @@ function Get-MacInfo {
 	$macInfoHash.Add("ACWakeOnLan",$ACWakeOnLAN)
 	#apple silicon info
 	if ($isAppleSilicon) {
-		$macInfoHash.Add("ACHighPowerMode,$ACHighPowerMode")
+		$macInfoHash.Add("ACHighPowerMode",$ACHighPowerMode)
 		$macInfoHash.Add("ACSleepOnPowerButton",$ACSleepOnPowerButton)
 	} else {
 		#intel info
@@ -891,6 +893,9 @@ function Get-MacInfo {
 		$macInfoHash.Add("ACWakeOnACChange",$ACWakeOnACCHange)
 		$macInfoHash.Add("ACWakeOnClamshellOpen",$ACWakeOnClamshellOpen)
 	}
+	#add a blank line to make reading easier
+	$macInfoHash.Add("               "," ")
+
 	#put in the AC Charger info here, there's some logic to it
 	$macInfoHash.Add("ACChargerConnected",$ACChargerConnected)
 	$macInfoHash.Add("ACChargerCharging",$ACChargerCharging)
@@ -904,7 +909,7 @@ function Get-MacInfo {
 	$macInfoHash.Add("ACChargerHWVers",$ACChargerHWVers)
 	$macInfoHash.Add("ACChargerFirmwareVers",$ACChargerFirmwareVers)
 	$macInfoHash.Add("ACChargerFamily",$ACChargerFamily)
-	$macInfoHash.Add("               "," ")
+	$macInfoHash.Add("                "," ")
 
 	#if we have a battery, add that
 	if ($hasBattery) {
@@ -927,6 +932,9 @@ function Get-MacInfo {
 			$macInfoHash.Add("batteryWakeOnACChange",$batteryWakeOnACChange)
 			$macInfoHash.Add("batteryWakeOnClamshellOpen",$batteryWakeOnClamshellOpen)
 		}
+		#more white space
+		$macInfoHash.Add("                 "," ")
+
 		$macInfoHash.Add("batteryWarningLevel",$batteryWarningLevel)
 		$macInfoHash.Add("batteryFullyCharged",$batteryFullyCharged)
 		$macInfoHash.Add("batteryIsCharging",$batteryIsCharging)
@@ -934,11 +942,15 @@ function Get-MacInfo {
 		if (!($isAppleSilicon)) {
 			$macInfoHash.Add("batteryMaxChargeCapacity",$batteryMaxChargeCapacity) #intel only
 		}
+		$macInfoHash.Add("                  "," ")
+
 		$macInfoHash.Add("batteryCycleCount",$batteryCycleCount)
 		$macInfoHash.Add("batteryHealth",$batteryHealth)
 		if ($isAppleSilicon) {
 			$macInfoHash.Add("batteryHealthMaxCapacity",$batteryHealthMaxCapacity) #apple silicon only
 		}
+		$macInfoHash.Add("                   "," ")
+
 		$macInfoHash.Add("batterySerialNumber",$batterySerialNumber)
 		$macInfoHash.Add("batteryDeviceName",$batteryDeviceName)
 		$macInfoHash.Add("batteryFirmwareVersion",$batteryFirmwareVersion)
@@ -947,7 +959,7 @@ function Get-MacInfo {
 		if (!($isAppleSilicon)) {
 			$macInfoHash.Add("batteryManufacturer",$batteryManufacturer) #intel Only
 		}
-		$macInfoHash.Add("                "," ")
+		$macInfoHash.Add("                    "," ")
 	}
 
 	#if we have a UPS, add that
@@ -964,12 +976,8 @@ function Get-MacInfo {
 		if ($isAppleSilicon) {
 			$macInfoHash.Add("UPSSleepOnPowerButton",$UPSSleepOnPowerButton) #apple silicon only
 		}
-		$macInfoHash.Add("                 "," ")
+		$macInfoHash.Add("                     "," ")
 	}
-
-
-
-	
 
 	#so we want the hashtable to be filled before we even care about what the person asked for. This is lazy as hell, to be sure, but,
 	#it ensures that no matter what the parameter asks for, it will work. Also really, the entire thing takes just over a second to run,
