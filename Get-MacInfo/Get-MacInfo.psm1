@@ -567,6 +567,7 @@ function Get-MacInfo {
 				#Okay, now we have the system sleep timer data. Now we can start looking at Apple Silcon vs. not.
 				#FUUUUUUUUUU
 
+				#We can always assume AC power exists
 				#set up our common stuff
 				$ACPowerInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].'AC Power'
 				$Global:ACDiskSleepTimer = $ACPowerInfo.'Disk Sleep Timer'
@@ -590,10 +591,92 @@ function Get-MacInfo {
 					$Global:ACSleepOnPowerButton = $ACPowerInfo.'Sleep On Power Button'
 					$Global:ACHighPowerMode = $ACPowerInfo.HighPowerMode
 				} else {
-					#do this when we're back at home and can ssh to the intel MBP for specific
-					#Property Names
+					$Global:ACDisplaySleepDim = $ACPowerInfo.'Display Sleep Uses Dim'
+					$Global:ACWakeOnACCHange = $ACPowerInfo.'Wake On AC Change'
+					$Global:ACWakeOnClamshellOpen = $ACPowerInfo.'Wake On Clamshell Open'
 				}
 
+				#Test for Battery
+				$batteryPowerInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].'Battery Power'
+
+				#if there's a battery (like built in, not in the room)
+				if ($null -ne $batteryPowerInfo) {
+					#this is possibly redundant, but since we can't be SURE which will be hit first, this
+					#or the preceding battery info, setting it here too is fine.
+					$hasBattery = $true
+
+					#test to see if computer is running on battery power
+					if(!([string]::IsNullOrEmpty($batteryPowerInfo.'Current Power Source'))) {
+						$Global:batteryCurrentPowerSource = $batteryPowerInfo.'Current Power Source'
+					}
+
+					#architecture independent stuff
+					$Global:batteryDiskSleepTimer = $batteryPowerInfo.'Disk Sleep Timer'
+					$Global:batteryDisplaySleepTimer = $batteryPowerInfo.'Display Sleep Timer'
+					$Global:batteryHibernateMode = $batteryPowerInfo.'Hibernate Mode'
+					$Global:batteryLowPowerMode = $batteryPowerInfo.LowPowerMode
+					$Global:batteryNetworkOverSleep = $batteryPowerInfo.PrioritizeNetworkReachabilityOverSleep
+					$Global:batteryReduceBrightness = $batteryPowerInfo.ReduceBrightness
+					$Global:batterySystemSleepTimer = $batteryPowerInfo.'System Sleep Timer'
+					$Global:batteryWakeOnLan = $batteryPowerInfo.'Wake On LAN'
+
+					#Arch-specific stuff
+					if ($isAppleSilicon) {
+						$Global:batteryHighPowerMode = $batteryPowerInfo.HighPowerMode
+						$Global:batterySleepOnPowerButton = $batteryPowerInfo.'Sleep On Power Button'
+					} else {
+						$Global:batterDisplaySleepUsesDim = $batteryPowerInfo.'Display Sleep Uses Dim'
+						$Global:batteryWakeOnACChange = $batteryPowerInfo.'Wake On AC Change'
+						$Global:batteryWakeOnClamshellOpen = $batteryPowerInfo.'Wake On Clamshell Open'
+					}
+				}
+
+				#test for UPS Power. Yes, I know about hwconfig info, but we don't know if this
+				#section will process before or after that, so we test it here, where we need it
+				$UPSPowerInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].'UPS Power'
+
+				#UPS power exists
+				if ($null -ne $UPSPowerInfo) {
+
+					#set has UPS flag to true
+					$hasUPS = $true
+
+					if(!([string]::IsNullOrEmpty($UPSPowerInfo.'Current Power Source'))) {
+						$Global:UPSCurrentPowerSource = $UPSPowerInfo.'Current Power Source'
+					}
+
+					#no idea if there's arch-dependent stuff, so it's all just here
+					$Global:UPSAutoRestartOnPwrLoss = $UPSPowerInfo.'Automatic Restart On Power Loss'
+					$Global:UPSDiskSleepTimer = $UPSPowerInfo.'Disk Sleep Timer'
+					$Global:UPSDisplaySleepTimer = $UPSPowerInfo.'Display Sleep Timer'
+					$Global:UPSNetworkOverSleep = $UPSPowerInfo.PrioritizeNetworkReachabilityOverSleep
+					$Global:UPSSleepOnPowerButton = $UPSPowerInfo.'Sleep On Power Button'
+					$Global:UPSSystemSleepTimer = $UPSPowerInfo.'System Sleep Timer'
+					$Global:UPSWakeOnLan = $UPSPowerInfo.'Wake On LAN'
+				}
+			}
+
+			"sppower_hwconfig_information" {
+				#has one value: is a UPS installed or not
+				#it always exists, so we don't need to set it anywhere else
+				$Global:UPSInstalled = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_ups_installed
+
+				#set the flag appropriately.
+				if ($UPSInstalled -eq "TRUE") {
+					$hasUPS = $true
+				} else {
+					#is this strictly needed? No. Does it avoid potential problems? Yes
+					$hasUPS = $false
+				}
+			}
+
+			"sppower_ac_charger_information" {
+				#like assuming there's always an AC Power Type, we assume there's always some kind of
+				#AC charger info. This is different in that we don't have a named property after
+				#SPPowerDataType[$theIndex]
+
+				#Also note that depending on the charger the computer is plugged into,
+				#much of these may be null
 			}
 		}
 
