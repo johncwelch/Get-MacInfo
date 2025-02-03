@@ -467,7 +467,7 @@ function Get-MacInfo {
 	$SPPowerTypeData = getSPJSONData -SPDataType "SPPowerDataType"
 
 	#get number of items in the collection, may end up not needing
-	$SPPowerTypeDataCount = $SPPowerTypeData.SPPowerDataType.Count
+	#$SPPowerTypeDataCount = $SPPowerTypeData.SPPowerDataType.Count
 
 	#Get list of section names
 	$SPPowerTypeNames = $SPPowerTypeData[0].SPPowerDataType._name
@@ -891,6 +891,19 @@ function Get-MacInfo {
 		$macInfoHash.Add("ACWakeOnACChange",$ACWakeOnACCHange)
 		$macInfoHash.Add("ACWakeOnClamshellOpen",$ACWakeOnClamshellOpen)
 	}
+	#put in the AC Charger info here, there's some logic to it
+	$macInfoHash.Add("ACChargerConnected",$ACChargerConnected)
+	$macInfoHash.Add("ACChargerCharging",$ACChargerCharging)
+	#the rest of this is variable AF, and there's not a great way to test for it other
+	#than if statements or a switch case. Which I'll do if I get complaints
+	$macInfoHash.Add("ACChargerName",$ACChargerName)
+	$macInfoHash.Add("ACChargerSerialNumber",$ACChargerSerialNumber)
+	$macInfoHash.Add("ACChargerWatts",$ACChargerWatts)
+	$macInfoHash.Add("ACChargerManf",$ACChargerManf)
+	$macInfoHash.Add("ACChargerID",$ACChargerID)
+	$macInfoHash.Add("ACChargerHWVers",$ACChargerHWVers)
+	$macInfoHash.Add("ACChargerFirmwareVers",$ACChargerFirmwareVers)
+	$macInfoHash.Add("ACChargerFamily",$ACChargerFamily)
 	$macInfoHash.Add("               "," ")
 
 	#if we have a battery, add that
