@@ -499,15 +499,18 @@ function Get-MacInfo {
 				$Global:batteryChargeLevel = $batteryChargeInfo.sppower_battery_state_of_charge
 				#Intel-only value
 				if (!($isAppleSilicon)) {
-					$Global:batteryMaxCapacity = $batteryChargeInfo.sppower_battery_max_capacity
+					$Global:batteryMaxChargeCapacity = $batteryChargeInfo.sppower_battery_max_capacity
 				}
 
 				#battery health info, same for both arch's
 				$batteryHealthInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_health_info
 				$Global:batteryCycleCount = $batteryHealthInfo.sppower_battery_cycle_count
 				$Global:batteryHealth = $batteryHealthInfo.sppower_battery_health
-				$Global:batteryMaxCapacity = $batteryHealthInfo.sppower_battery_health_maximum_capacity
-
+				#AS-only value
+				if ($isAppleSilicon) {
+					$Global:batteryHealthMaxCapacity = $batteryHealthInfo.sppower_battery_health_maximum_capacity
+				}
+				
 				#battery model info
 				$batteryModelInfo = $SPPowerTypeData[0].SPPowerDataType[$theIndex].sppower_battery_model_info
 				$Global:batterySerialNumber = $batteryModelInfo.sppower_battery_serial_number
@@ -515,6 +518,7 @@ function Get-MacInfo {
 				$Global:batteryFirmwareVersion = $batteryModelInfo.sppower_battery_firmware_version
 				$Global:batteryHardwareRevision = $batteryModelInfo.sppower_battery_hardware_revision
 				$Global:batteryCellRevision = $batteryModelInfo.sppower_battery_cell_revision
+				#Intel-Only
 				if (!($isAppleSilicon)) {
 					$Global:batteryManufacturer = $batteryModelInfo.sppower_battery_manufacturer
 				}
@@ -883,6 +887,30 @@ function Get-MacInfo {
 		$macInfoHash.Add("ACWakeOnClamshellOpen",$ACWakeOnClamshellOpen)
 	}
 	$macInfoHash.Add("               "," ")
+
+	#if we have a battery, add that
+	if ($hasBattery) {
+		$macInfoHash.Add("batteryWarningLevel",$batteryWarningLevel)
+		$macInfoHash.Add("batteryFullyCharged",$batteryFullyCharged)
+		$macInfoHash.Add("batteryIsCharging",$batteryIsCharging)
+		$macInfoHash.Add("batteryChargeLevel",$batteryChargeLevel)
+		if (!($isAppleSilicon)) {
+			$macInfoHash.Add("batteryMaxChargeCapacity",$batteryMaxChargeCapacity)
+		}
+		$macInfoHash.Add("batteryCycleCount",$batteryCycleCount)
+		$macInfoHash.Add("batteryHealth",$batteryHealth)
+		if ($isAppleSilicon) {
+			$macInfoHash.Add("batteryHealthMaxCapacity",$batteryHealthMaxCapacity)
+		}
+		$macInfoHash.Add("batterySerialNumber",$batterySerialNumber)
+		$macInfoHash.Add("batteryDeviceName",$batteryDeviceName)
+		$macInfoHash.Add("batteryFirmwareVersion",$batteryFirmwareVersion)
+		$macInfoHash.Add("batteryHardwareRevision",$batteryHardwareRevision)
+		$macInfoHash.Add("batteryCellRevision",$batteryCellRevision)
+		if (!($isAppleSilicon)) {
+			$macInfoHash.Add("batteryManufacturer",$batteryManufacturer)
+		}
+	}
 
 
 
