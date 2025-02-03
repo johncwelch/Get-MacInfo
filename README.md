@@ -157,4 +157,4 @@ Added SIP status
 	added many things, apple pay, bluetooth, post test, formatted the output a bit better, it now works correctly for Apple Silicon...so many updates. There's also now a CHANGELOG file.  
   
 2 Feb. 2025 update  
-	MASSIVE update. Read the CHANGELOG for details
+	MASSIVE update. Read the CHANGELOG for details  
