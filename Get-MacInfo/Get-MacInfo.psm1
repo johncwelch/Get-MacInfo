@@ -586,7 +586,7 @@ function Get-MacInfo {
 						$Global:batteryHighPowerMode = $batteryPowerInfo.HighPowerMode
 						$Global:batterySleepOnPowerButton = $batteryPowerInfo.'Sleep On Power Button'
 					} else {
-						$Global:batterDisplaySleepUsesDim = $batteryPowerInfo.'Display Sleep Uses Dim'
+						$Global:batteryDisplaySleepUsesDim = $batteryPowerInfo.'Display Sleep Uses Dim'
 						$Global:batteryWakeOnACChange = $batteryPowerInfo.'Wake On AC Change'
 						$Global:batteryWakeOnClamshellOpen = $batteryPowerInfo.'Wake On Clamshell Open'
 					}
@@ -613,7 +613,10 @@ function Get-MacInfo {
 					$Global:UPSDiskSleepTimer = $UPSPowerInfo.'Disk Sleep Timer'
 					$Global:UPSDisplaySleepTimer = $UPSPowerInfo.'Display Sleep Timer'
 					$Global:UPSNetworkOverSleep = $UPSPowerInfo.PrioritizeNetworkReachabilityOverSleep
-					$Global:UPSSleepOnPowerButton = $UPSPowerInfo.'Sleep On Power Button'
+					#assuming this is apple silcon only here too, since it is everywhere else
+					if ($isAppleSilicon) {
+						$Global:UPSSleepOnPowerButton = $UPSPowerInfo.'Sleep On Power Button'
+					}
 					$Global:UPSSystemSleepTimer = $UPSPowerInfo.'System Sleep Timer'
 					$Global:UPSWakeOnLan = $UPSPowerInfo.'Wake On LAN'
 				}
@@ -878,10 +881,12 @@ function Get-MacInfo {
 	$macInfoHash.Add("ACLowPowerMode",$ACLowPowerMode)
 	$macInfoHash.Add("ACNetworkOverSleep",$ACNetworkOverSleep)
 	$macInfoHash.Add("ACWakeOnLan",$ACWakeOnLAN)
+	#apple silicon info
 	if ($isAppleSilicon) {
 		$macInfoHash.Add("ACHighPowerMode,$ACHighPowerMode")
 		$macInfoHash.Add("ACSleepOnPowerButton",$ACSleepOnPowerButton)
 	} else {
+		#intel info
 		$macInfoHash.Add("ACDisplaySleepUsesDim",$ACDisplaySleepDim)
 		$macInfoHash.Add("ACWakeOnACChange",$ACWakeOnACCHange)
 		$macInfoHash.Add("ACWakeOnClamshellOpen",$ACWakeOnClamshellOpen)
@@ -890,17 +895,36 @@ function Get-MacInfo {
 
 	#if we have a battery, add that
 	if ($hasBattery) {
+		$macInfoHash.Add("batteryCurrentPowerSource",$batteryCurrentPowerSource)
+		$macInfoHash.Add("batterySystemSleepTimer",$batterySystemSleepTimer)
+		$macInfoHash.Add("batteryDiskSleepTimer",$batteryDiskSleepTimer)
+		$macInfoHash.Add("batteryDisplaySleepTimer",$batteryDisplaySleepTimer)
+		$macInfoHash.Add("batteryReduceBrightness",$batteryReduceBrightness)
+		$macInfoHash.Add("batteryHibernateMode",$batteryHibernateMode)
+		$macInfoHash.Add("batteryLowPowerMode",$batteryLowPowerMode)
+		$macInfoHash.Add("batteryNetworkOverSleep",$batteryNetworkOverSleep)
+		$macInfoHash.Add("batteryWakeOnLan",$batteryWakeOnLan)
+		#apple silicon info
+		if ($isAppleSilicon) {
+			$macInfoHash.Add("batteryHighPowerMode",$batteryHighPowerMode)
+			$macInfoHash.Add("batterySleepOnPowerButton",$batterySleepOnPowerButton)
+		} else {
+			#intel info
+			$macInfoHash.Add("batteryDisplaySleepUsesDim",$batteryDisplaySleepUsesDim)
+			$macInfoHash.Add("batteryWakeOnACChange",$batteryWakeOnACChange)
+			$macInfoHash.Add("batteryWakeOnClamshellOpen",$batteryWakeOnClamshellOpen)
+		}
 		$macInfoHash.Add("batteryWarningLevel",$batteryWarningLevel)
 		$macInfoHash.Add("batteryFullyCharged",$batteryFullyCharged)
 		$macInfoHash.Add("batteryIsCharging",$batteryIsCharging)
 		$macInfoHash.Add("batteryChargeLevel",$batteryChargeLevel)
 		if (!($isAppleSilicon)) {
-			$macInfoHash.Add("batteryMaxChargeCapacity",$batteryMaxChargeCapacity)
+			$macInfoHash.Add("batteryMaxChargeCapacity",$batteryMaxChargeCapacity) #intel only
 		}
 		$macInfoHash.Add("batteryCycleCount",$batteryCycleCount)
 		$macInfoHash.Add("batteryHealth",$batteryHealth)
 		if ($isAppleSilicon) {
-			$macInfoHash.Add("batteryHealthMaxCapacity",$batteryHealthMaxCapacity)
+			$macInfoHash.Add("batteryHealthMaxCapacity",$batteryHealthMaxCapacity) #apple silicon only
 		}
 		$macInfoHash.Add("batterySerialNumber",$batterySerialNumber)
 		$macInfoHash.Add("batteryDeviceName",$batteryDeviceName)
@@ -908,8 +932,26 @@ function Get-MacInfo {
 		$macInfoHash.Add("batteryHardwareRevision",$batteryHardwareRevision)
 		$macInfoHash.Add("batteryCellRevision",$batteryCellRevision)
 		if (!($isAppleSilicon)) {
-			$macInfoHash.Add("batteryManufacturer",$batteryManufacturer)
+			$macInfoHash.Add("batteryManufacturer",$batteryManufacturer) #intel Only
 		}
+		$macInfoHash.Add("                "," ")
+	}
+
+	#if we have a UPS, add that
+	#note we add the hardware config regardless, this is just for the UPS-specific info
+	$macInfoHash.Add("UPSInstalled",$UPSInstalled)
+	if ($hasUPS) {
+		$macInfoHash.Add("UPSCurrentPowerSource",$UPSCurrentPowerSource)
+		$macInfoHash.Add("UPSSystemSleepTimer",$UPSSystemSleepTimer)
+		$macInfoHash.Add("UPSAutoRestartOnPowerLoss",$UPSAutoRestartOnPwrLoss)
+		$macInfoHash.Add("UPSDiskSleepTimer",$UPSDiskSleepTimer)
+		$macInfoHash.Add("UPSDisplaySleepTimer",$UPSDisplaySleepTimer)
+		$macInfoHash.Add("UPSNetworkOverSleep",$UPSNetworkOverSleep)
+		$macInfoHash.Add("UPSWakeOnLan",$UPSWakeOnLan)
+		if ($isAppleSilicon) {
+			$macInfoHash.Add("UPSSleepOnPowerButton",$UPSSleepOnPowerButton) #apple silicon only
+		}
+		$macInfoHash.Add("                 "," ")
 	}
 
 
