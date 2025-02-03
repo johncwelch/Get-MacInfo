@@ -479,12 +479,6 @@ function Get-MacInfo {
 	$Global:hasBattery = $false
 	$Global:hasUPS = $false
 
-	#Globals for the system sleep timers. we can check for nulls to see if we use them
-	$Global:ACPowerSystemSleepTimer = ""
-	$Global:BatteryPowerSystemSleepTimer = ""
-	$Global:UPSPowerSystemSleepTimer
-
-
 	#we use globals here because scope issues can be tricky and are HARD to manager.
 	foreach($entry in $SPPowerTypeNames) {
 		#the index is important in doing this, since it may or may not be different. saves some work
@@ -544,7 +538,7 @@ function Get-MacInfo {
 				if(!([string]::IsNullOrEmpty($ACPowerInfo.'Current Power Source'))) {
 					$Global:ACCurrentPowerSource = $ACPowerInfo.'Current Power Source'
 				} else {
-					$Global:ACCurrentPowerSource = ""
+					$Global:ACCurrentPowerSource = "FALSE"
 				}
 
 				#apple Silicon section for AC Power
@@ -569,6 +563,8 @@ function Get-MacInfo {
 					#test to see if computer is running on battery power
 					if(!([string]::IsNullOrEmpty($batteryPowerInfo.'Current Power Source'))) {
 						$Global:batteryCurrentPowerSource = $batteryPowerInfo.'Current Power Source'
+					} else {
+						$Global:batteryCurrentPowerSource = "FALSE"
 					}
 
 					#architecture independent stuff
@@ -604,6 +600,8 @@ function Get-MacInfo {
 
 					if(!([string]::IsNullOrEmpty($UPSPowerInfo.'Current Power Source'))) {
 						$Global:UPSCurrentPowerSource = $UPSPowerInfo.'Current Power Source'
+					} else {
+						$Global:UPSCurrentPowerSource = "FALSE"
 					}
 
 					#no idea if there's arch-dependent stuff, so it's all just here
@@ -768,7 +766,11 @@ function Get-MacInfo {
 	#remove the trailing period
 	$csrutilStatus = $csrutilStatus.Substring(0,$csrutilStatus.Length-1)
 
-	##common element hashtable build
+	##hashtable build, we deal with arch versions inline. It's not harder to read
+	##and gets rid of a LOT of duplication. 
+
+	##the reason for the ever-increasing spaces in the blank lines is to avoid duplication of "names"
+	##which are no-nos for hashtables.
 
 	$macInfoHash.Add("macOSBuildLabEx", $mainDarwinKernelVersion)
 	$macInfoHash.Add(" "," ")
@@ -778,92 +780,63 @@ function Get-MacInfo {
 	$macInfoHash.Add("  "," ")
 	$macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
 	$macInfoHash.Add("   "," ")
-	
-	#splitting out the test for arch-specific stuff
-	if($isAppleSilicon) {
-		#into the (Apple Silcon) hashtable with you!
-		$macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
-		$macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
-		$macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
-		$macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
-		$macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
-		$macInfoHash.Add("    "," ")
-		$macInfoHash.Add("HardwareModelName", $macInfoModelName)
-		$macInfoHash.Add("HardwareModelID", $macInfoModelID)
+	$macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
+	if (!($isAppleSilicon)) {
+		$macInfoHash.Add("T2FirmwareVersion", $macInfoT2FirmwareVersion) #intel only
+	}
+	$macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
+	$macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
+	$macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
+	$macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
+	$macInfoHash.Add("    "," ")
+	$macInfoHash.Add("HardwareModelName", $macInfoModelName)
+	$macInfoHash.Add("HardwareModelID", $macInfoModelID)
+	if ($isAppleSilicon) {
 		$macInfoHash.Add("HardwareModelNumber", $macInfoModelNumber) #apple silicon only
-		$macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
-		$macInfoHash.Add("     "," ")
-		$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
-		$macInfoHash.Add("CPUName" , $macInfoCPUName)
+	}
+	$macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
+	$macInfoHash.Add("     "," ")
+	$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
+	$macInfoHash.Add("CPUName" , $macInfoCPUName)
+	$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
+	$macInfoHash.Add("RAMAmount", $macInfoRAMSize)
+	if ($isAppleSilicon) {
 		$macInfoHash.Add("CPUTotalCoreCount", $macInfoCPUCoreCountTotal) #apple silicon only
 		$macInfoHash.Add("CPUPerformanceCoreCount", $macInfoCPUPerformanceCoreCount) #apple silicon only
 		$macInfoHash.Add("CPUEfficiencyCoreCount", $macInfoCPUEfficiencyCoreCount) #apple silicon only
-		$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
-		$macInfoHash.Add("RAMAmount", $macInfoRAMSize)
-		$macInfoHash.Add("      "," ")
-		$macInfoHash.Add("ApplePayPlatformID", $applePayInfoPlatformID)
-		$macInfoHash.Add("ApplePaySEID", $applePayInfoSEID)
-		$macInfoHash.Add("ApplePaySystemOSSEID", $applePayInfoSystemOSSEID)#apple silicon only
-		$macInfoHash.Add("ApplePayHardware", $applePayInfoHardware)
-		$macInfoHash.Add("ApplePayFirmware", $applePayInfoFirmware)
-		$macInfoHash.Add("ApplePayJCOPOSVersion", $applePayInfoJCOPOSVersion)
-		$macInfoHash.Add("ApplePayControllerHardwareVersion", $applePayControllerHardwareVersion)
-		$macInfoHash.Add("ApplePayControllerFirmwareVersion", $applePayControllerFirmwareVersion)
-		$macInfoHash.Add("ApplePayControllerMiddlewareVersion", $applePayControllerMiddlewareVersion)
-		$macInfoHash.Add("       "," ")
-		$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
-		$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
-		$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
-		$macInfoHash.Add("BluetoothState",$blueToothState)
-		$macInfoHash.Add("BluetoothFirmwareVersion",$bluetoothFirmwareVersion)
-		$macInfoHash.Add("BluetoothProductID", $blueToothProductID) #apple silicon only
-		$macInfoHash.Add("BluetoothSupportedServices",$bluetoothSupportedServices)
-		$macInfoHash.Add("BluetoothTransport",$blueToothTransport)
-		$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
-		$macInfoHash.Add("        "," ")
 	} else {
-		#intel specific stuff or section sans apple silicon stuff
-		$macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
-		$macInfoHash.Add("T2FirmwareVersion", $macInfoT2FirmwareVersion)
-		$macInfoHash.Add("OSLoaderVersion", $macInfoSMCVersion)
-		$macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
-		$macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
-		$macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
-		$macInfoHash.Add("    "," ")
-		$macInfoHash.Add("HardwareModelName", $macInfoModelName)
-		$macInfoHash.Add("HardwareModelID", $macInfoModelID)
-		$macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
-		$macInfoHash.Add("     "," ")
-		$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
-		$macInfoHash.Add("CPUName" , $macInfoCPUName)
 		$macInfoHash.Add("CPUSpeed", $macInfoCPUSpeed) #Intel Only
 		$macInfoHash.Add("CPUCount", $macInfoCPUCount) #Intel Only
-		$macInfoHash.Add("CPUCoreCount", $macInfoCPUCoreCount)
+		$macInfoHash.Add("CPUCoreCount", $macInfoCPUCoreCount) #Intel Only
 		$macInfoHash.Add("CPUL2CacheSize", $macInfoCPUL2CacheSize) #Intel Only
-		$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
 		$macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize) #Intel Only
 		$macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled) #Intel Only
-		$macInfoHash.Add("RAMAmount", $macInfoRAMSize)
-		$macInfoHash.Add("      "," ")
-		$macInfoHash.Add("ApplePayPlatformID", $applePayInfoPlatformID)
-		$macInfoHash.Add("ApplePaySEID", $applePayInfoSEID)
-		$macInfoHash.Add("ApplePayHardware", $applePayInfoHardware)
-		$macInfoHash.Add("ApplePayFirmware", $applePayInfoFirmware)
-		$macInfoHash.Add("ApplePayJCOPOSVersion", $applePayInfoJCOPOSVersion)
-		$macInfoHash.Add("ApplePayControllerHardwareVersion", $applePayControllerHardwareVersion)
-		$macInfoHash.Add("ApplePayControllerFirmwareVersion", $applePayControllerFirmwareVersion)
-		$macInfoHash.Add("ApplePayControllerMiddlewareVersion", $applePayControllerMiddlewareVersion)
-		$macInfoHash.Add("       "," ")
-		$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
-		$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
-		$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
-		$macInfoHash.Add("BluetoothState",$blueToothState)
-		$macInfoHash.Add("BluetoothFirmwareVersion",$bluetoothFirmwareVersion)
-		$macInfoHash.Add("BluetoothSupportedServices",$bluetoothSupportedServices)
-		$macInfoHash.Add("BluetoothTransport",$blueToothTransport)
-		$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
-		$macInfoHash.Add("         "," ")
 	}
+	$macInfoHash.Add("      "," ")
+	$macInfoHash.Add("ApplePayPlatformID", $applePayInfoPlatformID)
+	$macInfoHash.Add("ApplePaySEID", $applePayInfoSEID)
+	if ($isAppleSilicon) {
+		$macInfoHash.Add("ApplePaySystemOSSEID", $applePayInfoSystemOSSEID)#apple silicon only
+	}
+	$macInfoHash.Add("ApplePayHardware", $applePayInfoHardware)
+	$macInfoHash.Add("ApplePayFirmware", $applePayInfoFirmware)
+	$macInfoHash.Add("ApplePayJCOPOSVersion", $applePayInfoJCOPOSVersion)
+	$macInfoHash.Add("ApplePayControllerHardwareVersion", $applePayControllerHardwareVersion)
+	$macInfoHash.Add("ApplePayControllerFirmwareVersion", $applePayControllerFirmwareVersion)
+	$macInfoHash.Add("ApplePayControllerMiddlewareVersion", $applePayControllerMiddlewareVersion)
+	$macInfoHash.Add("       "," ")
+	$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
+	$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
+	$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
+	$macInfoHash.Add("BluetoothState",$blueToothState)
+	$macInfoHash.Add("BluetoothFirmwareVersion",$bluetoothFirmwareVersion)
+	if ($isAppleSilicon) {
+		$macInfoHash.Add("BluetoothProductID", $blueToothProductID) #apple silicon only
+	}
+	$macInfoHash.Add("BluetoothSupportedServices",$bluetoothSupportedServices)
+	$macInfoHash.Add("BluetoothTransport",$blueToothTransport)
+	$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
+	$macInfoHash.Add("        "," ")
 
 	#more common elements. The order matters
 	$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
@@ -891,7 +864,28 @@ function Get-MacInfo {
 	$macInfoHash.Add("Uptime", $macInfoUptime)
 	$macInfoHash.Add("              "," ")
 
-	#Power Info
+	##Power Info
+	#AC Power first, that's always there
+	$macInfoHash.Add("ACCurrentPowerSource",$ACCurrentPowerSource)
+	$macInfoHash.Add("ACSystemSleepTimer",$ACSystemSleepTimer)
+	$macInfoHash.Add("ACDiskSleepTImer",$ACDiskSleepTimer)
+	$macInfoHash.Add("ACDisplaySleepTimer",$ACDisplaySleepTimer)
+	$macInfoHash.Add("ACHibernateMode",$ACHibernateMode)
+	$macInfoHash.Add("ACLowPowerMode",$ACLowPowerMode)
+	$macInfoHash.Add("ACNetworkOverSleep",$ACNetworkOverSleep)
+	$macInfoHash.Add("ACWakeOnLan",$ACWakeOnLAN)
+	if ($isAppleSilicon) {
+		$macInfoHash.Add("ACHighPowerMode,$ACHighPowerMode")
+		$macInfoHash.Add("ACSleepOnPowerButton",$ACSleepOnPowerButton)
+	} else {
+		$macInfoHash.Add("ACDisplaySleepUsesDim",$ACDisplaySleepDim)
+		$macInfoHash.Add("ACWakeOnACChange",$ACWakeOnACCHange)
+		$macInfoHash.Add("ACWakeOnClamshellOpen",$ACWakeOnClamshellOpen)
+	}
+	$macInfoHash.Add("               "," ")
+
+
+
 	
 
 	#so we want the hashtable to be filled before we even care about what the person asked for. This is lazy as hell, to be sure, but,
