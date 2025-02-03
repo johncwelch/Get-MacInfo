@@ -91,6 +91,59 @@ function Get-MacInfo {
 	BluetoothSupportedServices
 	BluetoothTransport
 	BluetoothVendorID
+	ACCurrentPowerSource
+	ACSystemSleepTimer
+	ACDiskSleepTImer
+	ACDisplaySleepTimer
+	ACHibernateMode
+	ACLowPowerMode
+	ACNetworkOverSleep
+	ACWakeOnLan
+	ACHighPowerMode
+	ACSleepOnPowerButton
+	ACDisplaySleepUsesDim
+	ACWakeOnACChange
+	ACWakeOnClamshellOpen
+	ACChargerConnected
+	ACChargerCharging
+	ACChargerName
+	ACChargerSerialNumber
+	ACChargerWatts
+	ACChargerManf
+	ACChargerID
+	ACChargerHWVers
+	ACChargerFirmwareVers
+	ACChargerFamily
+	batteryCurrentPowerSource
+	batterySystemSleepTimer
+	batteryDiskSleepTimer
+	batteryDisplaySleepTimer
+	batteryReduceBrightness
+	batteryHibernateMode
+	batteryLowPowerMode
+	batteryNetworkOverSleep
+	batteryWakeOnLan
+	batteryHighPowerMode
+	batterySleepOnPowerButton
+	batteryDisplaySleepUsesDim
+	batteryWakeOnACChange
+	batteryWakeOnClamshellOpen
+	batteryWarningLevel
+	batteryFullyCharged
+	batteryIsCharging
+	batteryChargeLevel
+	batteryMaxChargeCapacity
+	batteryCycleCount
+	batteryHealth
+	batteryHealthMaxCapacity
+	UPSCurrentPowerSource
+	UPSSystemSleepTimer
+	UPSAutoRestartOnPowerLoss
+	UPSDiskSleepTimer
+	UPSDisplaySleepTimer
+	UPSNetworkOverSleep
+	UPSWakeOnLan
+	UPSSleepOnPowerButton
 	AppMemoryUsedGB
 	VMPageFile
 	VMSwapInUseGB
@@ -1011,8 +1064,8 @@ Export-ModuleMember -Function Get-MacInfo
 # SIG # Begin signature block
 # MIIMgAYJKoZIhvcNAQcCoIIMcTCCDG0CAQMxDTALBglghkgBZQMEAgEwewYKKwYB
 # BAGCNwIBBKBtBGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCApPuCjcaHnkEo3
-# AM9SfIRXunVyh37ZA/KtDmPDKiZnCKCCCaswggQEMIIC7KADAgECAggYeqmowpYh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDr99oYvV4h1WXT
+# o9YeRqnSlo+6UMl4JjxChE4Rsox2k6CCCaswggQEMIIC7KADAgECAggYeqmowpYh
 # DDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzETMBEGA1UEChMKQXBwbGUg
 # SW5jLjEmMCQGA1UECxMdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxFjAU
 # BgNVBAMTDUFwcGxlIFJvb3QgQ0EwHhcNMTIwMjAxMjIxMjE1WhcNMjcwMjAxMjIx
@@ -1069,11 +1122,11 @@ Export-ModuleMember -Function Get-MacInfo
 # b24gQXV0aG9yaXR5MRMwEQYDVQQKDApBcHBsZSBJbmMuMQswCQYDVQQGEwJVUwII
 # Bh5mm1/XjiowCwYJYIZIAWUDBAIBoHwwEAYKKwYBBAGCNwIBDDECMAAwGQYJKoZI
 # hvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcC
-# ARUwLwYJKoZIhvcNAQkEMSIEIBkmzAzJfBtgP9ydyNX4q3Mm1W6giyf4xwbaLSTk
-# je3KMAsGCSqGSIb3DQEBAQSCAQBdiCZ6QUUVqEgHY5EtS8HQ2ufHYGozBjWzSJ4r
-# 575rTfLBfYMksvVoHhyL4Re4wERVq4jakwjEwXvQpI08+DL+sqh4KzEzG0J83x9q
-# oyEpmz7M5vPaTNV2+tlfGs9SlvQ9oRZTehXfm9rOz+fxiIb4v7SKHvt6K+t1SdGV
-# LZ4ctDXtat00Ma8C2hOGi8ortKZcnifRQt72HKz8p0OB1V2jdhIEEhoIgmTAt6YW
-# oSj3SNC++HL/U9TfHx15l1YZwr5jXPu4P7P+57p2eXwB15CAkrQaVRD8ETEYF5K9
-# m/RbB3e7rl2tZge4DMHC3s6MlUfV+9NnOuvuycNfARBBBjtc
+# ARUwLwYJKoZIhvcNAQkEMSIEIHJfSybKQt91WB0bvUINdYLsxfd9WCRxTNxXgPve
+# l4rJMAsGCSqGSIb3DQEBAQSCAQBs1/K5l2HsqFoeQ0/dAKueD1Z0q8PB3ljdvj+J
+# Ci3hsFolEnnedHqV5rG9rQSFXCwzyk2EW8PiQZwLf7A05tndehsfQuGzMMGXkezZ
+# RU6Yz43dnGTKvY30fn5tBvaOAJE3ZgPO+RwovOrrO8y4optyZT2rvWtw6GYcW0wk
+# mzzkmc38l9h5Jm9y7CKU6mFzVYiPLkff979n5IfxDRuWt3MSJWIii3h+W0DwUuBW
+# LIFlwKzZrmap6VU6zQzilXEqsoOjjvTH+GOtR4vSTsIokiDSV3G6SQ/3A+jp9Am4
+# 9Rxb0gjQ927vUBICh5q/UdxGNdWrowpmk+4T0EOIt1eEnnAO
 # SIG # End signature block
