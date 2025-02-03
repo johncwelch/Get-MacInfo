@@ -26,4 +26,6 @@ We really need one of these now
 
 	Added Power info for battery, AC power, and UPS.  
 
+	Removed POST test items, they seem to have been removed in a recent OS update
+
 	Updated version to 2.0, this is a huge change
