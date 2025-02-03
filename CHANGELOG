@@ -16,7 +16,8 @@ We really need one of these now
 
 	may have to find a different way co calculate vm swap used
 
-	updated macInfoDNSHostNameTest to allow for null return when not set
+	updated macInfoDNSHostNameTest to allow for null return when not set  
+
 20250202 MASSIVE CHANGES
 	rearchitected the system_profiler sections to use the JSON output to get info via directly addressing the items rather than  
 	hoping for the best with "this is that line of the array in the output. WAY less fragile.  
