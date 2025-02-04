@@ -5,7 +5,9 @@ $macInfoShortUserName = /usr/bin/whoami
 #we are absolutely not going to check other users
 $warrantyFolderPath = "/Users/$macInfoShortUserName/Library/Application Support/com.apple.NewDeviceOutreach"
 $hardwareModelName = "MacBook Pro"
-$warrantyHashTable = [ordered]@{}
+
+#list of hashtable names
+$theNamesArrayList = New-Object System.Collections.ArrayList
 
 #does the path even exist, if not, exit
 if (Test-Path -Path $warrantyFolderPath) {
@@ -14,7 +16,7 @@ if (Test-Path -Path $warrantyFolderPath) {
 	#if there's at least one file, proceed
 	if ($fileCount -gt 0) {
 		#get an array of file names with the newest file first
-		$fileNameArray = ls -t $warrantyFolderPath
+		$fileNameArray = /bin/ls -t $warrantyFolderPath
 		#okay, so here's the thing: you may have multiple warranty files for your stuff. I have two for my airpods
 		#and one each for my MBPs. So we have to make a choice. We're going to go with the newest file
 		#that matches the model of the mac we're running this on. If I come up with a better/more reliable/less fragile
@@ -40,14 +42,35 @@ if (Test-Path -Path $warrantyFolderPath) {
 			#is the deviceDesc the same as the hardware model we're running the command on. If it is, cool,
 			#we pull data. If not, we go to the next one. Hopefully ONE of these matches
 			if ($warrantyInfo.deviceInfo.deviceDesc -eq $hardwareModelName) {
+
+				#this is the only way to build multiple hashtables, one for each item that matches
+
+				#create the hashtable name
+				$theName = "warrantyHashTable$theIndex"
+				
+				#add to our arrayList
+				$theNamesArrayList.Add($theName)
+				
+				#create a global hashtable
+				Set-Variable -Name $theName -Scope Global
+
+				#use get-variable so we can actually manipulate this since we can't directly
+				$theHashTable = Get-Variable -Name $theName
+
+				#make it an actual hashtable by manipulating the value
+				$theHashTable.Value = [ordered]@{}
+
+				#now we can add to the hashtable
+
 				#now lets get the info and put it into something that is useful. Like another ordered hashtable!
-				$warrantyHashTable.Add("hasCoverage",$warrantyInfo.covered)
-				$warrantyHashTable.Add("AppleCareOfferEligible",$warrantyInfo.acOfferEligible)
-				$warrantyHashTable.Add("AppleCareSubscription",$warrantyInfo.isAcSubscription)
-				$warrantyHashTable.Add("coverageLabel",$warrantyInfo.coverageLocalizedLabel)
-				$warrantyHashTable.Add("shortCoverageDesc",$warrantyInfo.coverageLocalizedDesc)
-				$warrantyHashTable.Add("longCoverageDesc",$warrantyInfo.coverageLocalizedDescLong)
-				$warrantyHashTable.Add("coverageExpirationLabel",$warrantyInfo.coverageLocalizedExpirationLabel)
+				$theHashTable.Value.Add("HardwareModelName",$hardwareModelName)
+				$theHashTable.Value.Add("hasCoverage",$warrantyInfo.covered)
+				$theHashTable.Value.Add("AppleCareOfferEligible",$warrantyInfo.acOfferEligible)
+				$theHashTable.Value.Add("AppleCareSubscription",$warrantyInfo.isAcSubscription)
+				$theHashTable.Value.Add("coverageLabel",$warrantyInfo.coverageLocalizedLabel)
+				$theHashTable.Value.Add("shortCoverageDesc",$warrantyInfo.coverageLocalizedDesc)
+				$theHashTable.Value.Add("longCoverageDesc",$warrantyInfo.coverageLocalizedDescLong)
+				$theHashTable.Value.Add("coverageExpirationLabel",$warrantyInfo.coverageLocalizedExpirationLabel)
 
 				#check for coverage end date
 				#this is in epoch time and an int64, but we don't care
@@ -59,10 +82,12 @@ if (Test-Path -Path $warrantyFolderPath) {
 
 					#and now it's a string!
 					$coverageEndDate = date -jf %s $coverageEndDate "+%F"
-					$warrantyHashTable.Add("coverageEndDate",$coverageEndDate)
+					$theHashTable.Value.Add("coverageEndDate",$coverageEndDate)
 				}
+				#this will only get the first item that matches the hardware the script is running on
+				#hopefully that's what works, there's no good way to have this
+				#$theHashTable.Value 
 			}
-			break 
 		}
 	} else {
 		write-output "no warranty files found"
@@ -70,4 +95,11 @@ if (Test-Path -Path $warrantyFolderPath) {
 } else {
 	write-output "no warranty info folder"
 }
-$warrantyHashTable
+#now we iterate through the various hashtables and show their values
+foreach ($warrantyHashName in $theNamesArrayList) {
+	$theWarrantyHashTable = Get-Variable -Name $warrantyHashName
+	$theTableName = $theWarrantyHashTable.Name
+	Write-Output "Table Name: $theTableName"
+	Write-Output $theWarrantyHashTable.Value
+	Write-Output " "
+}
