@@ -73,7 +73,13 @@ if (Test-Path -Path $warrantyFolderPath) {
 				$theHashTable.Value.Add("coverageLabel",$warrantyInfo.coverageLocalizedLabel)
 				$theHashTable.Value.Add("shortCoverageDesc",$warrantyInfo.coverageLocalizedDesc)
 				$theHashTable.Value.Add("longCoverageDesc",$warrantyInfo.coverageLocalizedDescLong)
-				$theHashTable.Value.Add("coverageExpirationLabel",$warrantyInfo.coverageLocalizedExpirationLabel)
+
+				#if the computer is out of coverage, there won't be a coverage expiration label
+				#so only add it if that value is not empty or null
+				if(!([string]::IsNullOrEmpty($warrantyInfo.coverageLocalizedExpirationLabel))){
+					$theHashTable.Value.Add("coverageExpirationLabel",$warrantyInfo.coverageLocalizedExpirationLabel)
+				}
+				
 
 				#check for coverage end date
 				#this is in epoch time and an int64, but we don't care
