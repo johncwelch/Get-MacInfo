@@ -115,7 +115,7 @@ if (Test-Path -Path $warrantyFolderPath) {
 foreach ($warrantyHashName in $theNamesArrayList) { 
 	$theWarrantyHashTable = Get-Variable -Name $warrantyHashName 
 	$theTableName = $theWarrantyHashTable.Name
-	Write-Output "Table Name: $theTableName"
+	Write-Output "Table Name:`t$theTableName"
 	Write-Output $theWarrantyHashTable.Value
 	Write-Output " "
 }
