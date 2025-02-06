@@ -25,7 +25,7 @@ if (Test-Path -Path $warrantyFolderPath) {
 		#method, we'll use that.
 
 		#iterate through the files
-		foreach ($warrantyFile in $fileNameArray) {
+		foreach ($warrantyFile in $fileNameArray) { 
 			#get the index, we'll need that
 			$theIndex = [array]::IndexOf($fileNameArray,$warrantyFile)
 
@@ -50,8 +50,9 @@ if (Test-Path -Path $warrantyFolderPath) {
 				#create the hashtable name
 				$theName = "warrantyHashTable$theIndex"
 				
-				#add to our arrayList
-				$theNamesArrayList.Add($theName)
+				#add to our arrayList. The out-null supresses the listing of the arraylist index number
+				#in the output. It's just annoying is all
+				$theNamesArrayList.Add($theName)|Out-Null
 				
 				#create a global hashtable
 				Set-Variable -Name $theName -Scope Global
@@ -102,9 +103,11 @@ if (Test-Path -Path $warrantyFolderPath) {
 } else {
 	write-output "no warranty info folder"
 }
+
+
 #now we iterate through the various hashtables and show their values
-foreach ($warrantyHashName in $theNamesArrayList) {
-	$theWarrantyHashTable = Get-Variable -Name $warrantyHashName
+foreach ($warrantyHashName in $theNamesArrayList) { 
+	$theWarrantyHashTable = Get-Variable -Name $warrantyHashName 
 	$theTableName = $theWarrantyHashTable.Name
 	Write-Output "Table Name: $theTableName"
 	Write-Output $theWarrantyHashTable.Value
