@@ -1,9 +1,11 @@
-
+#get user name of person running the script
 $macInfoShortUserName = /usr/bin/whoami
 
 #build warranty folder path for current user
 #we are absolutely not going to check other users
 $warrantyFolderPath = "/Users/$macInfoShortUserName/Library/Application Support/com.apple.NewDeviceOutreach"
+
+#this is hardcoded to save some lines, but there's ways to not do this
 $hardwareModelName = "MacBook Pro"
 
 #list of hashtable names
@@ -78,10 +80,15 @@ if (Test-Path -Path $warrantyFolderPath) {
 				if ($null -ne $coverageEndDate) {
 					#there's SOMETHING there, let's get a human readable date
 					#PowerShell can do this, but the number's not the same as the unix version,
-					#and I think for our needs the "truth" would be the unix version
+					#and I think for our needs the "truth" would be the unix version. Actually, that's
+					#wrong, the date in the warranty info for the System Preferences UI matches the
+					#PowerShell version, so we're going to use that
 
-					#and now it's a string!
-					$coverageEndDate = date -jf %s $coverageEndDate "+%F"
+					#Convert Unix Epoch time to "human" date and time the powershell way
+					$coverageEndDate = (New-Object DateTime 1970,1,1,0,0,0).AddSeconds($coverageEndDate)
+					#Get just the date from the DateTime object and format it sanely, i.e. 09 Mar 2025
+					$coverageEndDate = $coverageEndDate.ToString("dd MMM yyyy")
+					#add to the hashtable
 					$theHashTable.Value.Add("coverageEndDate",$coverageEndDate)
 				}
 				#this will only get the first item that matches the hardware the script is running on
