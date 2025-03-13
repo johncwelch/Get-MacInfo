@@ -111,7 +111,19 @@ UPSDiskSleepTimer
 UPSDisplaySleepTimer  
 UPSNetworkOverSleep  
 UPSWakeOnLan  
-UPSSleepOnPowerButton (Apple Silicon Only)  
+UPSSleepOnPowerButton (Apple Silicon Only)
+iBridgeBootUUID  
+iBridgeFWVersion  
+iBridgeModelName  
+iBridgeExtraBootPolicies  
+iBridgeBootArgsFiltering  
+iBridgeKernelCTRR  
+iBridgeDEPMDM  
+iBridgeUserApprMDM  
+iBridgeAllAllKexts  
+iBridgeSIPStatus  
+iBridgeSSVStatus  
+iBridgeSecureBootLvl  
 AppMemoryUsedGB  
 VMPageFile  
 VMSwapInUseGB  

@@ -12,24 +12,116 @@ macOSCurrentBuildNumber
 macOSProductName  
 macOSDarwinVersion  
 SystemFirmwareVersion  
-T2FirmwareVersion  
+T2FirmwareVersion (currently Intel only as a separate thing in system profiler SPHardwareDataType)  
 OSLoaderVersion  
 HardwareSerialNumber  
 HardwareUUID  
 ProvisioningUDID  
 HardwareModelName  
 HardwareModelID  
+HardwareModelNumber (Apple Silicon Only)  
 ActivationLockStatus  
 CPUArchitecture  
 CPUName  
 CPUSpeed (Intel Only)  
 CPUCount (Intel Only)  
-CPUCoreCount  
+CPUCoreCount (Intel Only)  
+CPUTotalCoreCount (Apple Silicon Only)  
+CPUPerformanceCoreCount (Apple Silicon Only)  
+CPUEfficiencyCoreCount (Apple Silicon Only)  
 CPUL2CacheSize (Intel Only)  
 CPUBrandString  
 L3CacheSize (Intel Only)  
 HyperThreadingEnabled (Intel Only)  
 RAMAmount  
+ApplePayPlatformID  
+ApplePaySEID  
+ApplePaySystemOSSEID (Apple Silicon Only)  
+ApplePayHardware  
+ApplePayFirmware  
+ApplePayJCOPOSVersion  
+ApplePayControllerHardwareVersion  
+ApplePayControllerFirmwareVersion  
+ApplePayControllerMiddlewareVersion  
+BluetoothMAC  
+BluetoothChipset  
+BluetoothDiscoverable  
+BluetoothFirmwareVersion  
+BluetoothProductID (Apple Silicon Only)  
+BluetoothSupportedServices  
+BluetoothTransport  
+BluetoothVendorID  
+ACCurrentPowerSource  
+ACSystemSleepTimer  
+ACDiskSleepTImer  
+ACDisplaySleepTimer  
+ACHibernateMode  
+ACLowPowerMode  
+ACNetworkOverSleep  
+ACWakeOnLan  
+ACHighPowerMode (Apple Silicon Only)  
+ACSleepOnPowerButton (Apple Silicon Only)  
+ACDisplaySleepUsesDim (Intel Only)  
+ACWakeOnACChange (Intel Only)  
+ACWakeOnClamshellOpen (Intel Only)  
+ACChargerConnected  
+ACChargerCharging  
+ACChargerName  
+ACChargerSerialNumber  
+ACChargerWatts  
+ACChargerManf  
+ACChargerID  
+ACChargerHWVers  
+ACChargerFirmwareVers  
+ACChargerFamily  
+batteryCurrentPowerSource  
+batterySystemSleepTimer  
+batteryDiskSleepTimer  
+batteryDisplaySleepTimer  
+batteryReduceBrightness  
+batteryHibernateMode  
+batteryLowPowerMode  
+batteryNetworkOverSleep  
+batteryWakeOnLan  
+batteryHighPowerMode (Apple Silicon Only)  
+batterySleepOnPowerButton (Apple Silicon Only)  
+batteryDisplaySleepUsesDim (Intel Only)  
+batteryWakeOnACChange (Intel Only)  
+batteryWakeOnClamshellOpen (Intel Only)  
+batteryWarningLevel  
+batteryFullyCharged  
+batteryIsCharging  
+batteryChargeLevel  
+batteryMaxChargeCapacity (Intel Only)  
+batteryCycleCount  
+batteryHealth  
+batteryHealthMaxCapacity (Apple Silicon Only)  
+batterySerialNumber  
+batteryDeviceName  
+batteryFirmwareVersion  
+batteryHardwareRevision  
+batteryCellRevision  
+batteryManufacturer (Intel Only)  
+UPSCurrentPowerSource  
+UPSSystemSleepTimer  
+UPSAutoRestartOnPowerLoss  
+UPSDiskSleepTimer  
+UPSDisplaySleepTimer  
+UPSNetworkOverSleep  
+UPSWakeOnLan  
+UPSSleepOnPowerButton (Apple Silicon Only)
+iBridgeBootUUID  
+iBridgeFWVersion  
+iBridgeModelName  
+iBridgeExtraBootPolicies  
+iBridgeBootArgsFiltering  
+iBridgeKernelCTRR  
+iBridgeDEPMDM  
+iBridgeUserApprMDM  
+iBridgeAllAllKexts  
+iBridgeSIPStatus  
+iBridgeSSVStatus  
+iBridgeSecureBootLvl  
 AppMemoryUsedGB  
 VMPageFile  
 VMSwapInUseGB  
