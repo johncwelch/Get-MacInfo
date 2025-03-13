@@ -150,6 +150,18 @@ function Get-MacInfo {
 	UPSNetworkOverSleep
 	UPSWakeOnLan
 	UPSSleepOnPowerButton (Apple Silicon Only)
+	iBridgeBootUUID
+	iBridgeFWVersion
+	iBridgeModelName
+	iBridgeExtraBootPolicies
+	iBridgeBootArgsFiltering
+	iBridgeKernelCTRR
+	iBridgeDEPMDM
+	iBridgeUserApprMDM
+	iBridgeAllAllKexts
+	iBridgeSIPStatus
+	iBridgeSSVStatus
+	iBridgeSecureBootLvl
 	AppMemoryUsedGB
 	VMPageFile
 	VMSwapInUseGB
@@ -168,6 +180,7 @@ function Get-MacInfo {
 	CurrentDateTime
 	LastBootDateTime
 	Uptime
+
 
 	.EXAMPLE
 	Get-MacInfo by itself gives you all the parameters it can output
@@ -722,6 +735,29 @@ function Get-MacInfo {
 
 	}
 
+	##ibridge Data
+	$spiBridgeData = getSPJSONData -SPDataType SPiBridgeDataType
+	$spiBridgeDataType = $spiBridgeData.SPiBridgeDataType
+
+	#common types for both intel and AS
+	$Global:iBridgeBootUUID = $spiBridgeDataType.ibridge_boot_uuid
+	$Global:iBridgeBuild = $spiBridgeDataType.ibridge_build
+	#the one intel-unique param
+	if (!$isAppleSilicon) {
+		$Global:iBridgeModelName = $spiBridgeDataType.ibridge_model_name
+	#apple silicon only
+	} else {
+		$Global:iBridgeExtraBootPolicies = $spiBridgeDataType.ibridge_extra_boot_policies
+		$Global:iBridgeSBBootArgs = $spiBridgeDataType.ibridge_sb_boot_args
+		$Global:iBridgeSBCtrr = $spiBridgeDataType.ibridge_sb_ctrr
+		$Global:iBridgeSBDeviceMDM = $spiBridgeDataType.ibridge_sb_device_mdm
+		$Global:iBridgeSBManualMDM = $spiBridgeDataType.ibridge_sb_manual_mdm
+		$Global:iBridgeSBOtherKext = $spiBridgeDataType.ibridge_sb_other_kext
+		$Global:iBridgeSBSIP = $spiBridgeDataType.ibridge_sb_sip
+		$Global:iBridgeSBSSV = $spiBridgeDataType.ibridge_sb_ssv
+		$Global:iBridgeSecureBoot = $spiBridgeDataType.ibridge_secure_boot
+	}
+
 	#sysctl section===============================================================================
 	$macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
 	$macInfoVMPageFile = Invoke-Expression -Command "/usr/sbin/sysctl -n vm.swapfileprefix"
@@ -1022,6 +1058,7 @@ function Get-MacInfo {
 	#if we have a UPS, add that
 	#note we add the hardware config regardless, this is just for the UPS-specific info
 	$macInfoHash.Add("UPSInstalled",$UPSInstalled)
+	$macInfoHash.Add("                     "," ")
 	if ($hasUPS) {
 		$macInfoHash.Add("UPSCurrentPowerSource",$UPSCurrentPowerSource)
 		$macInfoHash.Add("UPSSystemSleepTimer",$UPSSystemSleepTimer)
@@ -1033,8 +1070,27 @@ function Get-MacInfo {
 		if ($isAppleSilicon) {
 			$macInfoHash.Add("UPSSleepOnPowerButton",$UPSSleepOnPowerButton) #apple silicon only
 		}
-		$macInfoHash.Add("                     "," ")
+		$macInfoHash.Add("                      "," ")
 	}
+
+	#ibridge additions
+	$macInfoHash.Add("iBridgeBootUUID",$iBridgeBootUUID)
+	$macInfoHash.Add("iBridgeFWVersion",$iBridgeBuild)
+	#split out intel & AS
+	if (!$isAppleSilicon) {
+		$macInfoHash.Add("iBridgeModelName",$iBridgeModelName)
+	} else {
+		$macInfoHash.Add("iBridgeExtraBootPolicies",$iBridgeExtraBootPolicies)
+		$macInfoHash.Add("iBridgeBootArgsFiltering",$iBridgeSBBootArgs)
+		$macInfoHash.Add("iBridgeKernelCTRR",$iBridgeSBCtrr)
+		$macInfoHash.Add("iBridgeDEPMDM",$iBridgeSBDeviceMDM)
+		$macInfoHash.Add("iBridgeUserApprMDM",$iBridgeSBManualMDM)
+		$macInfoHash.Add("iBridgeAllAllKexts",$iBridgeSBOtherKext)
+		$macInfoHash.Add("iBridgeSIPStatus",$iBridgeSBSIP)
+		$macInfoHash.Add("iBridgeSSVStatus",$iBridgeSBSSV)
+		$macInfoHash.Add("iBridgeSecureBootLvl",$iBridgeSecureBoot)
+	}
+	$macInfoHash.Add("                       "," ")
 
 	#so we want the hashtable to be filled before we even care about what the person asked for. This is lazy as hell, to be sure, but,
 	#it ensures that no matter what the parameter asks for, it will work. Also really, the entire thing takes just over a second to run,
@@ -1069,8 +1125,8 @@ Export-ModuleMember -Function Get-MacInfo
 # SIG # Begin signature block
 # MIIMgAYJKoZIhvcNAQcCoIIMcTCCDG0CAQMxDTALBglghkgBZQMEAgEwewYKKwYB
 # BAGCNwIBBKBtBGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAI4kxy6qeXRzSe
-# kt/3L8TajVMwqOLz2/raL8/++os8zaCCCaswggQEMIIC7KADAgECAggYeqmowpYh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC+w4dAgNCnWQp1
+# Zs5LDqWRYdwbgof80dNxdAarPC7lCaCCCaswggQEMIIC7KADAgECAggYeqmowpYh
 # DDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzETMBEGA1UEChMKQXBwbGUg
 # SW5jLjEmMCQGA1UECxMdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxFjAU
 # BgNVBAMTDUFwcGxlIFJvb3QgQ0EwHhcNMTIwMjAxMjIxMjE1WhcNMjcwMjAxMjIx
@@ -1127,11 +1183,11 @@ Export-ModuleMember -Function Get-MacInfo
 # b24gQXV0aG9yaXR5MRMwEQYDVQQKDApBcHBsZSBJbmMuMQswCQYDVQQGEwJVUwII
 # Bh5mm1/XjiowCwYJYIZIAWUDBAIBoHwwEAYKKwYBBAGCNwIBDDECMAAwGQYJKoZI
 # hvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcC
-# ARUwLwYJKoZIhvcNAQkEMSIEIIJXp3+PjrYKIOIHDVmVhsj8WGI6mLgN6028Ajk6
-# 3UrYMAsGCSqGSIb3DQEBAQSCAQBwlEQU+2iHEI+LvvVhAocmnWi7mQKT0jNOU+L8
-# 3KimVjo75vXMbKtBb84vM+2e8kPYkhfQPZTby8PfNYAvLxTiRWf1fVjR2F/f4rcu
-# JX2ADnmc0c/SVpxpayqByVnlYGDoCxeJfAyyjsu4j+FTV1k8EcvxHcvc5M+vg5U9
-# HOr8JPcwEeqchQcWNUtZU+Kf56yO+o8/LEUWriyxlDAzm/hZnRgDaqgoAnhkltha
-# ZmcW7YacrrMW+1Lq38pVX2hRkTHeSUlClvGAID5ylPP0ZTwDFlkIqv+SGr+ZGK4G
-# XhOF2bLeimfrVWt03R+veY1f1cZdmocN0SVqHQKc6lcm3DC6
+# ARUwLwYJKoZIhvcNAQkEMSIEIO3+qdTpxr/RS3JdlW1bhEeCAD6jiULffHpAUrR6
+# oaU+MAsGCSqGSIb3DQEBAQSCAQAb8Z9a0CA/qATzbifp7lK+OHKIOlKgdDp7qYUY
+# rOQRaPn5dIhD1siM8yzu+//zPnbjK6l/We+nDKRnMWKRt3bwVGjnYtnRwHKf8pA5
+# 0jaYe2kt09fcCunNtoMYZUnuQh0kOVrCermjza6ATCp2sm9AE63wgFFsWjsIetXZ
+# y8fIGyOHL7mAtQ8xYv1AgFZa6/+XtHmIci0mVYc0obRu4OxWewGAtQRAE+z4eE+N
+# 8Q1ysoAoBEOgJ1GwjXD9hcPsfYcOAJ4a2U6TpWAHkrTw7glvsRuszjO4ADDwXmXw
+# aa6MkeFdZEwhueWbbFLo4r1I1Tm+zBcWIW70gNHgGPU6h6ry
 # SIG # End signature block
