@@ -13,7 +13,7 @@
     RootModule = 'Get-MacInfo.psm1'
     
     # Version number of this module.
-    ModuleVersion = '2.0.3'
+    ModuleVersion = '2.0.4'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -108,7 +108,7 @@
             # IconUri = ''
     
             # ReleaseNotes of this module
-            ReleaseNotes = 'Added tags and licenseuri'
+            ReleaseNotes = 'Added Audio Device Listing'
     
             # Prerelease string of this module
             # Prerelease = ''
@@ -135,8 +135,8 @@
 # SIG # Begin signature block
 # MIIMgQYJKoZIhvcNAQcCoIIMcjCCDG4CAQMxDTALBglghkgBZQMEAgEwewYKKwYB
 # BAGCNwIBBKBtBGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD8I2WYmTHmUXcf
-# gqhtWo/B8xWtwO8SFt5R+Rp50HU5cKCCCawwggQEMIIC7KADAgECAggYeqmowpYh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB39Ct84WkpcqPz
+# TFuHVRNtG7Nc9yHZVdmyp4lRjHS4jKCCCawwggQEMIIC7KADAgECAggYeqmowpYh
 # DDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzETMBEGA1UEChMKQXBwbGUg
 # SW5jLjEmMCQGA1UECxMdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxFjAU
 # BgNVBAMTDUFwcGxlIFJvb3QgQ0EwHhcNMTIwMjAxMjIxMjE1WhcNMjcwMjAxMjIx
@@ -193,11 +193,11 @@
 # aW9uIEF1dGhvcml0eTETMBEGA1UECgwKQXBwbGUgSW5jLjELMAkGA1UEBhMCVVMC
 # CDj+3VBykqv0MAsGCWCGSAFlAwQCAaB8MBAGCisGAQQBgjcCAQwxAjAAMBkGCSqG
 # SIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3
-# AgEVMC8GCSqGSIb3DQEJBDEiBCB/5ABwn+3oSh0ewinVhxbGUoeyouVY1l9y/XWW
-# 7diVuzALBgkqhkiG9w0BAQEEggEAdzQpLjx+ljpfIOG10suvoJ32gN5gTXwYbt96
-# SRaIAz9DQUjWRAEDF1mjFpsgKK8Gl6BSBY7msl95gObgoe0B5Kytrux6PADsiO2T
-# XMUmhq8x/JMAiJ4nZ7RD+QDBzUG459EjLDpkTdl5ggX2f3Jn+QUjISWxRL7L24ax
-# W6+xouSZ9oVSe3rqap7KJ+00W55orkDQeEwM6F8kTvLk4su9wK97HuV+keC4j80+
-# 8exf98cH5Y7hovuQmlaoBokDAXNCTTal/SB8HNos/+WFVLEBMJ+o4EHRDwaUHPma
-# gxSP3T+4LVTiDptWlo//Y7zd0K64PNP6XlRz+/VcIICB6HeIKw==
+# AgEVMC8GCSqGSIb3DQEJBDEiBCC5vQkSbU8ONxoYomWoPL8oCVkiTLOa9eEjucBE
+# ZzlL/DALBgkqhkiG9w0BAQEEggEAnQaoEpho1FkLPpcqZKYu8gUz+JoDtEw2xWKI
+# WIwWqAQYtL6vYPwV6N0V5b30/dUQCvxj3+4di7HZwZgl2rIJlONxeL1DEA+HGrXX
+# 0jg4zw0NpfZWB0nYl3Btyu8O/2WUJuWwHwnzdjo17huzrIy1d8+UYh6X+EEmWfKj
+# XdsIv5rfL5+XnerlAeJLraPM3CNw5OCHl85wbgtpspBrBkT49k+oRG0QkwbYzSNd
+# KwKyczKPGnrdW8R6TMfwewmXE8mTbJoRxu+GICpsRvZpmEc+IV6BHKU++ZsaOauo
+# wd15cauEusGmhZ5qUddZz4GyJC7l/fzwwzvo5N1+e5tpk9td5w==
 # SIG # End signature block
