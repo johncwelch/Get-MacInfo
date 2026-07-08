@@ -1,9 +1,7 @@
 #!/usr/bin/env pwsh
 
-
 ## To do:
 	#app-sso output
-	#SPAudioDataType
 
 function getSPJSONData {
 	param (
@@ -220,12 +218,18 @@ function Get-MacInfo {
 
 	#get CPU Architecture
 	#we have to do this first so we can account for the CPU differences
+	#test on intel with [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
+
 	$macInfoCPUArch = Invoke-Expression -Command "/usr/bin/uname -m"
 	if ($macInfoCPUArch -eq "x86_64") {
 		$isAppleSilicon = $false
 	} else {
 		$isAppleSilicon = $true
 	}
+
+	#test with: $getMainDarwinVersion = $PSVersionTable 
+	#$mainDarwinKernelVersion = $getMainDarwinVersion.OS.Split(" ")[1].trim() 
+	#on intel/other machines
 
 	#we're going to try to mirror the results of the windows version of Get-ComputerInfo as much as possible
 	#first get the kernel version as maintDarwinVersion. This is initially a string
@@ -397,18 +401,9 @@ function Get-MacInfo {
 
 	#get JSON applepay data from system profiler
 	$SPApplePayData = getSPJSONData -SPDataType "SPSecureElementDataType"
-	#we don't need to care about raw here, there's no difference between ray and JSON output
+	#we don't need to care about raw here, there's no difference between raw and JSON output
 	$SPApplePayInfo = $SPApplePayData[0].SPSecureElementDataType[0]
 
-
-	#shove into an arraylist, remove all the blank lines
-	#[System.Collections.ArrayList]$applePayInfoArrayList = $applePayInfoArrayRaw.Split([Environment]::NewLine,$darwinVersionSplitOptions)
-
-	#remove the first two lines that only say "Apple Pay"
-	#$applePayInfoArrayList.RemoveRange(0,2)
-
-	#grab the platform ID line, item[0] split it on the :, grab the second element [1]
-	#trim all leading/trailing whitespace from element[1]
 	$applePayInfoPlatformID = $SPApplePayInfo.se_plt
 
 	#get the SEID the same way
@@ -499,13 +494,10 @@ function Get-MacInfo {
 	#create a temp array for the other services
 	$blueToothTempArray = $blueToothTemp.Split(" ")
 
-	#add them onto the backend of the arraylist which we can then shove in the hashlist
+	# add them onto the backend of the arraylist which we can then shove in the hashlist
 	foreach($item in $blueToothTempArray){
 		$bluetoothSupportedServices.Add($item)|Out-Null
 	}
-
-	#Removed the POST test section, it seems to have completely gone away
-	#Removed redundancies in the hashtable.
 
 	#SPPowerDataTypeNotes
 	#do some checking for AC Charger info
@@ -757,6 +749,22 @@ function Get-MacInfo {
 		$Global:iBridgeSBSSV = $spiBridgeDataType.ibridge_sb_ssv
 		$Global:iBridgeSecureBoot = $spiBridgeDataType.ibridge_secure_boot
 	}
+
+	##audio device data
+	$spAudioDeviceData = getSPJSONData -SPDataType SPAudioDataType
+
+	#that returned a list of objects, now we process that
+	#get the actual list of audio devices
+	$audioDeviceObjectList = $spAudioDeviceData[0].SPAudioDataType[0]._items
+
+	#create a string list to store the names in, we only list the names for now
+	$audioDeviceNameList = [System.Collections.Generic.List[string]]::new()
+
+	#iterate through the object list and build the list of names
+	foreach ($object in $audioDeviceObjectList) {
+		$audioDeviceNameList.Add($object[0]._name)
+	}
+
 
 	#sysctl section===============================================================================
 	$macInfoCPUBrand = Invoke-Expression -Command "/usr/sbin/sysctl -n machdep.cpu.brand_string"
@@ -1095,6 +1103,8 @@ function Get-MacInfo {
 		$macInfoHash.Add("iBridgeSecureBootLvl",$iBridgeSecureBoot)
 	}
 	$macInfoHash.Add("                       "," ")
+	$macInfoHash.Add("AudioDevices",$audioDeviceNameList)
+	$macInfoHash.Add("                        "," ")
 
 	#so we want the hashtable to be filled before we even care about what the person asked for. This is lazy as hell, to be sure, but,
 	#it ensures that no matter what the parameter asks for, it will work. Also really, the entire thing takes just over a second to run,
@@ -1126,12 +1136,11 @@ function Get-MacInfo {
 Export-ModuleMember -Function Get-MacInfo
 
 
-
 # SIG # Begin signature block
-# MIIMgAYJKoZIhvcNAQcCoIIMcTCCDG0CAQMxDTALBglghkgBZQMEAgEwewYKKwYB
+# MIIMgQYJKoZIhvcNAQcCoIIMcjCCDG4CAQMxDTALBglghkgBZQMEAgEwewYKKwYB
 # BAGCNwIBBKBtBGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCe1GIZs471CYM0
-# +piW48bKq51/qMd45zwcnMm+QAnxmKCCCaswggQEMIIC7KADAgECAggYeqmowpYh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCSgcQLSw8FrWPh
+# UG3Uulhrgo0BCZa4gxLeH7Z18+cn46CCCawwggQEMIIC7KADAgECAggYeqmowpYh
 # DDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzETMBEGA1UEChMKQXBwbGUg
 # SW5jLjEmMCQGA1UECxMdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxFjAU
 # BgNVBAMTDUFwcGxlIFJvb3QgQ0EwHhcNMTIwMjAxMjIxMjE1WhcNMjcwMjAxMjIx
@@ -1153,46 +1162,46 @@ Export-ModuleMember -Function Get-MacInfo
 # s8SDOvB3bXTELiNR7pqlA29g9KVIpwbCu1riHx9GRX7kl/UnELcgInJvctrGUHXF
 # PSWPXaMA6Z82jEg5j7M76pCALpWaYPR4zvQOClM+ovpP2B6uhJWNMrxWTYnpeBjg
 # rJpCunpGG4Siic4U6IjRWIv2rlbELAUqRa8L2UupAg80rIjHYVWJRMkncwfuguVO
-# 9XAwggWfMIIEh6ADAgECAggGHmabX9eOKjANBgkqhkiG9w0BAQsFADB5MS0wKwYD
+# 9XAwggWgMIIEiKADAgECAgg4/t1QcpKr9DANBgkqhkiG9w0BAQsFADB5MS0wKwYD
 # VQQDDCREZXZlbG9wZXIgSUQgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxJjAkBgNV
 # BAsMHUFwcGxlIENlcnRpZmljYXRpb24gQXV0aG9yaXR5MRMwEQYDVQQKDApBcHBs
-# ZSBJbmMuMQswCQYDVQQGEwJVUzAeFw0yMDA5MTYwMzU4MzBaFw0yNTA5MTcwMzU4
-# MzBaMIGNMRowGAYKCZImiZPyLGQBAQwKNzk2NDg4Vkc5NTE4MDYGA1UEAwwvRGV2
-# ZWxvcGVyIElEIEluc3RhbGxlcjogSm9obiBXZWxjaCAoNzk2NDg4Vkc5NSkxEzAR
-# BgNVBAsMCjc5NjQ4OFZHOTUxEzARBgNVBAoMCkpvaG4gV2VsY2gxCzAJBgNVBAYT
-# AlVTMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw0uP+x8FCIpcy4DJ
-# xqWRX3Pdtr55nnka0f22c7Ko+IAC//91iQxQLuz8fqbe4b3pEyemzfDB0GSVyhnY
-# AYLVYMjVaUamr2j7apX8M3QxIcxrlHAJte1Mo+ntsQic4+syz5HZm87ew4R/52T3
-# zzvtsjaKRIfy0VT35E9T4zVhpq3vdJkUCuQrHrXljxXhOEzJrJ9XllDDJ2QmYZc0
-# K29YE9pVPFiZxkbf5xmtx1CZhiUulCI0ypnj7dGxLJxRtJhsFChzeSflkOBtn9H/
-# RVuBjb0DaRib/mEK7FCbYgEbcIL5QcO3pUlIyghXaQoZsNaViszg7Xzfdh16efby
-# y+JLaQIDAQABo4ICFDCCAhAwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBRXF+2i
-# z9x8mKEQ4Py+hy0s8uMXVDBABggrBgEFBQcBAQQ0MDIwMAYIKwYBBQUHMAGGJGh0
-# dHA6Ly9vY3NwLmFwcGxlLmNvbS9vY3NwMDMtZGV2aWQwNzCCAR0GA1UdIASCARQw
-# ggEQMIIBDAYJKoZIhvdjZAUBMIH+MIHDBggrBgEFBQcCAjCBtgyBs1JlbGlhbmNl
-# IG9uIHRoaXMgY2VydGlmaWNhdGUgYnkgYW55IHBhcnR5IGFzc3VtZXMgYWNjZXB0
-# YW5jZSBvZiB0aGUgdGhlbiBhcHBsaWNhYmxlIHN0YW5kYXJkIHRlcm1zIGFuZCBj
-# b25kaXRpb25zIG9mIHVzZSwgY2VydGlmaWNhdGUgcG9saWN5IGFuZCBjZXJ0aWZp
-# Y2F0aW9uIHByYWN0aWNlIHN0YXRlbWVudHMuMDYGCCsGAQUFBwIBFipodHRwOi8v
-# d3d3LmFwcGxlLmNvbS9jZXJ0aWZpY2F0ZWF1dGhvcml0eS8wFwYDVR0lAQH/BA0w
-# CwYJKoZIhvdjZAQNMB0GA1UdDgQWBBRdVgk/6FL+2RJDsLeMey31Hn+TBzAOBgNV
-# HQ8BAf8EBAMCB4AwHwYKKoZIhvdjZAYBIQQRDA8yMDE5MDIwNjAwMDAwMFowEwYK
-# KoZIhvdjZAYBDgEB/wQCBQAwDQYJKoZIhvcNAQELBQADggEBAHdfmGHh7XOchb/f
-# reKxq4raNtrvb7DXJaubBNSwCjI9GhmoAJIQvqtAHSSt4CHsffoekPkWRWaJKgbk
-# +UTCZLMy712KfWtRcaSNNzOp+5euXkEsrCurBm/Piua+ezeQWt6RzGNM86bOa34W
-# 4r6jdYm8ta9ql4So07Z4kz3y5QN7fI20B8kG5JFPeN88pZFLUejGwUpshXFO+gbk
-# GrojkwbpFuRAsiEZ1ngeqtObaO8BRKHahciFNpuTXk1I0o0XBZ2JmCUWzx3a6T4u
-# fME1heNtNLRptGYMtZXH4tboV39Wf5lgHc4KR85Mbw52srsRU22NE8JWAvgFp/Qz
-# qX5rmVIxggIrMIICJwIBATCBhTB5MS0wKwYDVQQDDCREZXZlbG9wZXIgSUQgQ2Vy
-# dGlmaWNhdGlvbiBBdXRob3JpdHkxJjAkBgNVBAsMHUFwcGxlIENlcnRpZmljYXRp
-# b24gQXV0aG9yaXR5MRMwEQYDVQQKDApBcHBsZSBJbmMuMQswCQYDVQQGEwJVUwII
-# Bh5mm1/XjiowCwYJYIZIAWUDBAIBoHwwEAYKKwYBBAGCNwIBDDECMAAwGQYJKoZI
-# hvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcC
-# ARUwLwYJKoZIhvcNAQkEMSIEIDUCHOkBi/ZPqn89bkCiThhqRNHwjPzmdXYl4S+c
-# 5b29MAsGCSqGSIb3DQEBAQSCAQAdaQaRDTp7wgGaL46ak4sxZwV3K61vq+MSvNMc
-# qjfYjM5kptjljZGUvOGQ2tI1LbAajoHSbbWlL4hpDY3a664Xs6z/4fzAzAkPLWPj
-# zjPYkIdRBxSoDpFC918wWF2Sv0sPJaiH2axS/joXzh0jQ3LKEAaTyR28VHvZWjop
-# +Gir93NEqgybRKL5GzZ1dc1uX4SVs32AHIyYYF8A8twcRSD4c+fy6cUI9CtymRSM
-# d8JWszWG6tTe81J2aLa0C8f7CysFLLWM89FMePmcPW0z+ki44MT2fXwtgoWK/gV9
-# VK6ADNorCaw6Tu03YaVrnhDDZV8S/shH7dMaHzMCLyAWKBNV
+# ZSBJbmMuMQswCQYDVQQGEwJVUzAeFw0yNTA1MjAxNzI2MzZaFw0yNzAyMDEyMjEy
+# MTVaMIGPMRowGAYKCZImiZPyLGQBAQwKNzk2NDg4Vkc5NTE6MDgGA1UEAwwxRGV2
+# ZWxvcGVyIElEIEFwcGxpY2F0aW9uOiBKb2huIFdlbGNoICg3OTY0ODhWRzk1KTET
+# MBEGA1UECwwKNzk2NDg4Vkc5NTETMBEGA1UECgwKSm9obiBXZWxjaDELMAkGA1UE
+# BhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDG5iTyi/Llb8QR
+# mKSVEMaSkIAyXssehEKC1nJKp9ZkaRLxan/q6B7JeWzTNa6XCBG3Pf4Dz0IQnU6U
+# qDsPFYpwhRtS14CNVnwmcMJeJ/hy6MW++cBymq9xEZD80c69muLZmYr2KLKFu6WJ
+# nPK4JvYNqZ5Iug7UthcVeZBTdCDHCsVui8WMrFwDe112hqHFb9YiwrZF3w4v3G7X
+# cU6KO6oiD79C26xelHqAjuPZUxHbiJDhrgI2xbr4phtyukq/aaUyvOEGRuzr9ViT
+# imxjMH0Dzd3eYQNyZ/OgpBTg/u5bt4c4L+ivLNWpkImm5NLByjPWj2Rgxex9q7gu
+# d8eXX5PBAgMBAAGjggITMIICDzAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFFcX
+# 7aLP3HyYoRDg/L6HLSzy4xdUMEAGCCsGAQUFBwEBBDQwMjAwBggrBgEFBQcwAYYk
+# aHR0cDovL29jc3AuYXBwbGUuY29tL29jc3AwMy1kZXZpZDA2MIIBHQYDVR0gBIIB
+# FDCCARAwggEMBgkqhkiG92NkBQEwgf4wgcMGCCsGAQUFBwICMIG2DIGzUmVsaWFu
+# Y2Ugb24gdGhpcyBjZXJ0aWZpY2F0ZSBieSBhbnkgcGFydHkgYXNzdW1lcyBhY2Nl
+# cHRhbmNlIG9mIHRoZSB0aGVuIGFwcGxpY2FibGUgc3RhbmRhcmQgdGVybXMgYW5k
+# IGNvbmRpdGlvbnMgb2YgdXNlLCBjZXJ0aWZpY2F0ZSBwb2xpY3kgYW5kIGNlcnRp
+# ZmljYXRpb24gcHJhY3RpY2Ugc3RhdGVtZW50cy4wNgYIKwYBBQUHAgEWKmh0dHA6
+# Ly93d3cuYXBwbGUuY29tL2NlcnRpZmljYXRlYXV0aG9yaXR5LzAWBgNVHSUBAf8E
+# DDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQU+vpKLJ3aUHMJjwgzoV2hMj3fKX8wDgYD
+# VR0PAQH/BAQDAgeAMB8GCiqGSIb3Y2QGASEEEQwPMjAxOTAyMDYwMDAwMDBaMBMG
+# CiqGSIb3Y2QGAQ0BAf8EAgUAMA0GCSqGSIb3DQEBCwUAA4IBAQAV1Oma8FyEr7uz
+# iO/jzM9Zv+vfk6USv3P/G444JO51tYK9pfyOBIw1bAQriiW4AmUbgYsOTPBRDaSn
+# MuZBi/srL1G+mXngoiqaP4sdt3MgCt/mJTmz/PBxVZgLk8XKxZR8C6GBKX9vVSTR
+# oAbwake9HBhJe4RnNoELGuXk62b1QKnkKDKUizZtuAib13yDSr5bN0KxezeGmySg
+# t1maDJ+qCYpQUMB3Nls7taCozh4lsl7xtvc/2A8l2Nf9pcT0GGpkZdpf1WwUqm6O
+# 3fUQ7+GCO2ctz8CfUchecgcBDMP40oTKDsW7d8oLP5LU8YK8lgoAzUeHA5JMscLU
+# Ud176XtfMYICKzCCAicCAQEwgYUweTEtMCsGA1UEAwwkRGV2ZWxvcGVyIElEIENl
+# cnRpZmljYXRpb24gQXV0aG9yaXR5MSYwJAYDVQQLDB1BcHBsZSBDZXJ0aWZpY2F0
+# aW9uIEF1dGhvcml0eTETMBEGA1UECgwKQXBwbGUgSW5jLjELMAkGA1UEBhMCVVMC
+# CDj+3VBykqv0MAsGCWCGSAFlAwQCAaB8MBAGCisGAQQBgjcCAQwxAjAAMBkGCSqG
+# SIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3
+# AgEVMC8GCSqGSIb3DQEJBDEiBCCPTbYxVIAhsBvGYk77LYp1LHkigI2vnxe99RGv
+# AzmXNTALBgkqhkiG9w0BAQEEggEAs9cE3s1r2ktyBvCslE3yvHGrYoPZjx+I7bJN
+# X6rC8RMFgTpbdoRQJejPjLq44sz4nuFwqMZO+w6r6dBiJcvYE21KmczJ2rZ1WT6o
+# sSJJ/RvcPAt+OsCk7qawmSev6lC7IIugcEICrX2Ij9S2HKWO01rkMvTWdDPNPC1w
+# MizVCzvuKFEL78FR0WIcjCr3RlziuAFMNlIhiEfpZecBxlVMnIxUbwfWywOSjDBy
+# iscc38flOJhrLpuOsDlBsso10dTo12sOYe0tX8SjlmykAM0S+4tPDvq2fW3yN3sJ
+# hF2tL9N1AQCtrB96ASqrmF7NxajVLVuX1oSSouYj8tuvtCtnkQ==
 # SIG # End signature block

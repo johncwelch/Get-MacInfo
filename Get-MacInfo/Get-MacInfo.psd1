@@ -13,7 +13,7 @@
     RootModule = 'Get-MacInfo.psm1'
     
     # Version number of this module.
-    ModuleVersion = '2.0.2'
+    ModuleVersion = '2.0.3'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -31,7 +31,7 @@
     Copyright = '(c) John C. Welch. All rights reserved.'
     
     # Description of the functionality provided by this module
-    Description = 'A macOS version of the Get-ComputerInfo module'
+    Description = 'A macOS version of the Get-ComputerInfo module, collects data from the OS and hardware into one place'
     
     # Minimum version of the PowerShell engine required by this module
     # PowerShellVersion = '7.0'
