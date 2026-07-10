@@ -13,7 +13,7 @@
     RootModule = 'Get-MacInfo.psm1'
     
     # Version number of this module.
-    ModuleVersion = '2.0.5'
+    ModuleVersion = '2.5.0'
     
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -108,7 +108,7 @@
             # IconUri = ''
     
             # ReleaseNotes of this module
-            ReleaseNotes = 'Added Audio Device Listing to comment-based help'
+            ReleaseNotes = 'Added a json output option, -outputType, see get-help for info'
     
             # Prerelease string of this module
             # Prerelease = ''
@@ -130,13 +130,12 @@
     # DefaultCommandPrefix = ''
     
     }
-    
 
 # SIG # Begin signature block
 # MIIMgQYJKoZIhvcNAQcCoIIMcjCCDG4CAQMxDTALBglghkgBZQMEAgEwewYKKwYB
 # BAGCNwIBBKBtBGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBz7gWxsni4nZCw
-# +xJLCvUqQqBb8BVFo5KhtW9oo34sOKCCCawwggQEMIIC7KADAgECAggYeqmowpYh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBnZi0fJxa6KkJL
+# aEzFWttG2wmSghWnrs7PiFVNaqOqC6CCCawwggQEMIIC7KADAgECAggYeqmowpYh
 # DDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzETMBEGA1UEChMKQXBwbGUg
 # SW5jLjEmMCQGA1UECxMdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxFjAU
 # BgNVBAMTDUFwcGxlIFJvb3QgQ0EwHhcNMTIwMjAxMjIxMjE1WhcNMjcwMjAxMjIx
@@ -193,11 +192,11 @@
 # aW9uIEF1dGhvcml0eTETMBEGA1UECgwKQXBwbGUgSW5jLjELMAkGA1UEBhMCVVMC
 # CDj+3VBykqv0MAsGCWCGSAFlAwQCAaB8MBAGCisGAQQBgjcCAQwxAjAAMBkGCSqG
 # SIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3
-# AgEVMC8GCSqGSIb3DQEJBDEiBCAC6ABYyhuwM8+Jugg0eZ/I1RkRgmjDy/KLZNTZ
-# kE/BlDALBgkqhkiG9w0BAQEEggEAP+TKmYQnpcnzOPs2WUysT/uEabGXfQzfcLNu
-# 6qhk5wKaJZa4gVoBx+B9UNanQRSNSCcwNQlwmHvtU/ReTizq5yByokWSySHRl6bo
-# uPmQsUHMZr+sQZNV+iVnaVMNFKNKKyeejUlPpXW/aJWGVK38JnrU7HU2JrKukNYD
-# tadhiFi8hooGjxeAwEMueOSAQe3cVjHZE5Dx/UUCscAFUCRIhIx9Z6s7SOxuKit1
-# JjAbZxc5a6EY5R1GSLf8J5IC3jbwAPUprsdXkIwJzoW33t1WAbO/S6x8UB9sioCR
-# 8ZFqd9i60F6ikikB7q4Dt8rNeWudXagWKqVRtvZ82dgrf449iA==
+# AgEVMC8GCSqGSIb3DQEJBDEiBCCrr2A+LS382GsSHYMSUjvyAHRYv48rV21SfeH2
+# RvwKKDALBgkqhkiG9w0BAQEEggEAKcjsEdMnAP9Bmr/v2RbK+2Q7xFRYOogolKKt
+# egVTP5QvWLFpw4ZoCtQ4inbuIrMOertaTx8RY/y6C73OOYYmxkhJvbq7ZFwhzh/3
+# EDOi2fYkcMWtlJ75eeuAnb5nnkVbg/MxAVzvLm25SodhktQkX5pCcVctkMKSPacK
+# jx7KpVYId4Dpt2HDwHaRUkFICujoWLonqQQYNG8y4GOum41hKgd724nVKsm8VteK
+# vD53BSAezdWD6imMD9CJU0QR/d+IbnbPxzL8aMSQmdRXOIn3Pn15906re64sYifi
+# q/MKG48CmhZfcCnU1mdj0YjF/MuqhLt4r+qZZhjxRGAu0Ge+xA==
 # SIG # End signature block

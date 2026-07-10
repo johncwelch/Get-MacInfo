@@ -38,3 +38,8 @@ We really need one of these now
 
 20260708:  
 	Added audio device info
+20260709  
+	BIG update, added a way to get json output with -outputType json. That's the only output type it knows, anything else gets you the 'standard"  
+	ordered dictionary output. If you combine -outputType and -keys, you get: the keys you asked for if you used the wrong output type, or the full  
+	json output if you used json as the output type. Anyway, it's 2.5 now. Also put all the json conversion bits into a separate .ps1 file to avoid  
+	making the main .psm1 file SO MUCH LARGER.

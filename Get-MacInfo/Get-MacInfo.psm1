@@ -1,5 +1,9 @@
 #!/usr/bin/env pwsh
 
+#import json functionality
+#Import-Module  ./buildMacInfoJson.ps1
+
+
 ## To do:
 	#app-sso output
 
@@ -39,7 +43,9 @@ function Get-MacInfo {
 	If you run the script without any parameters, you get all the items in the hashtable. If you provide one key as a parameter,
 	you get the information for that key. You can provide a comma-separated list of keys and you'll get that as a result.
 
-	20221001 added code for Apple Silicon
+	There's two output options, the default ordered dictionary, and a json option, -outputType "json". If you use anything but json,
+	the script will ignore it and you'll get the default output. Also you can't specify a key and an output type. If you do, you get
+	the full json output
 
 	Note: the keys labled "Intel Only" don't exist for Apple Silicon.
 
@@ -185,20 +191,25 @@ function Get-MacInfo {
 	Get-MacInfo by itself gives you all the parameters it can output
 
 	.EXAMPLE
-	Get-MacInfo TimeZone gives you the current timezone for the computer
+	Get-MacInfo [-keys] TimeZone gives you the current timezone for the computer
 
 	.EXAMPLE
-	Get-MacInfo TimeZone,FileVault status gives you the current timezone and the filevault status for the computer
+	Get-MacInfo [-keys] TimeZone,FileVault status gives you the current timezone and the filevault status for the computer
 
-	.NOTES
-	This can be used as a Powershell module or as a standalone script.
+	.EXAMPLE
+	Get-MacInfo -outputType json gives you the full output in json format
 
 	.LINK
 	https://github.com/johncwelch/Get-MacInfo
 	#>
 
 	#input parameter line, has to be the first executable line in the script
-	param ($keys)
+	param ($keys,$outputType)
+
+	#this imports the function to convert the ordered dictionary $macInfoHash into json output
+	#you can't do it with relative paths, so this estabishes the full path to the script
+	#and the import works correctly
+	. ($PSScriptRoot + "\buildMacInfoJson.ps1")
 
 	#check to make sure this is running on a mac, if not, print error message and exit
 	if (-Not $IsMacOS)
@@ -817,15 +828,6 @@ function Get-MacInfo {
      #and trim trailing period
 	$macInfoFileVaultStatus = $macInfoFileVaultStatusArray[0].Split(" ")[-1].TrimEnd(".")
 
-	#DNS host name
-	# $macInfoDNSHostNameTest = Invoke-Expression -Command "/usr/sbin/scutil --get HostName"
-	# #we want to test for null or empty so we can have a default value just in case
-	# if([string]::IsNullOrEmpty($macInfoDNSHostNameTest)) {
-	# 	$macInfoDNSHostName = "Hostname: Not Set"
-	# } else {
-	# 	$macInfoDNSHostName = $macInfoDNSHostNameTest
-	# }
-
 	#switching DNS host name to hostname that doesn't generate weird errors ala scutil when you don't have DNS set for the machine
 	#will also let us avoid the if check
 	$macInfoDNSHostName = Invoke-Expression -Command "/bin/hostname -f"
@@ -885,14 +887,14 @@ function Get-MacInfo {
 	##the reason for the ever-increasing spaces in the blank lines is to avoid duplication of "names"
 	##which are no-nos for hashtables.
 
+	$macInfoHash.Add("macOS Information"," ")
 	$macInfoHash.Add("macOSBuildLabEx", $mainDarwinKernelVersion)
-	$macInfoHash.Add(" "," ")
 	$macInfoHash.Add("macOSCurrentVersion", $macInfoOSVersion)
 	$macInfoHash.Add("macOSCurrentBuildNumber", $macInfoOSBuildNumber)
 	$macInfoHash.Add("macOSProductName", $macInfoOSName)
-	$macInfoHash.Add("  "," ")
 	$macInfoHash.Add("macOSDarwinVersion", $mainDarwinKernelVersion)
-	$macInfoHash.Add("   "," ")
+	$macInfoHash.Add(" "," ")
+	$macInfoHash.Add("Firmware/Hardware Information"," ")
 	$macInfoHash.Add("SystemFirmwareVersion", $macInfoEFIVersion)
 	if (!($isAppleSilicon)) {
 		$macInfoHash.Add("T2FirmwareVersion", $macInfoT2FirmwareVersion) #intel only
@@ -901,18 +903,16 @@ function Get-MacInfo {
 	$macInfoHash.Add("HardwareSerialNumber", $macInfoHardwareSN)
 	$macInfoHash.Add("HardwareUUID", $macInfoHardwareUUID)
 	$macInfoHash.Add("ProvisioningUDID",$macInfoProvisioningUDID)
-	$macInfoHash.Add("    "," ")
 	$macInfoHash.Add("HardwareModelName", $macInfoModelName)
 	$macInfoHash.Add("HardwareModelID", $macInfoModelID)
 	if ($isAppleSilicon) {
 		$macInfoHash.Add("HardwareModelNumber", $macInfoModelNumber) #apple silicon only
 	}
-	$macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
-	$macInfoHash.Add("     "," ")
+	$macInfoHash.Add("  "," ")
+	$macInfoHash.Add("CPU Information"," ")
 	$macInfoHash.Add("CPUArchitecture", $macInfoCPUArch)
 	$macInfoHash.Add("CPUName" , $macInfoCPUName)
 	$macInfoHash.Add("CPUBrandString", $macInfoCPUBrand)
-	$macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 	if ($isAppleSilicon) {
 		$macInfoHash.Add("CPUTotalCoreCount", $macInfoCPUCoreCountTotal) #apple silicon only
 		$macInfoHash.Add("CPUPerformanceCoreCount", $macInfoCPUPerformanceCoreCount) #apple silicon only
@@ -925,8 +925,8 @@ function Get-MacInfo {
 		$macInfoHash.Add("L3CacheSize", $macInfoL3CacheSize) #Intel Only
 		$macInfoHash.Add("HyperThreadingEnabled", $macInfoHyperThreadingEnabled) #Intel Only
 	}
-	$macInfoHash.Add("      "," ")
-
+	$macInfoHash.Add("   "," ")
+	$macInfoHash.Add("Apple Pay Info"," ")
 	$macInfoHash.Add("ApplePayPlatformID", $applePayInfoPlatformID)
 	$macInfoHash.Add("ApplePaySEID", $applePayInfoSEID)
 	if ($isAppleSilicon) {
@@ -938,8 +938,8 @@ function Get-MacInfo {
 	$macInfoHash.Add("ApplePayControllerHardwareVersion", $applePayControllerHardwareVersion)
 	$macInfoHash.Add("ApplePayControllerFirmwareVersion", $applePayControllerFirmwareVersion)
 	$macInfoHash.Add("ApplePayControllerMiddlewareVersion", $applePayControllerMiddlewareVersion)
-	$macInfoHash.Add("       "," ")
-
+	$macInfoHash.Add("    "," ")
+	$macInfoHash.Add("Bluetooth Information"," ")
 	$macInfoHash.Add("BluetoothMAC",$blueToothMAC)
 	$macInfoHash.Add("BluetoothChipset",$blueToothChipset)
 	$macInfoHash.Add("BluetoothDiscoverable",$blueToothDiscoverable)
@@ -951,34 +951,39 @@ function Get-MacInfo {
 	$macInfoHash.Add("BluetoothSupportedServices",$bluetoothSupportedServices)
 	$macInfoHash.Add("BluetoothTransport",$blueToothTransport)
 	$macInfoHash.Add("BluetoothVendorID",$blueToothVendorID)
-	$macInfoHash.Add("        "," ")
-
+	$macInfoHash.Add("     "," ")
+	$macInfoHash.Add("RAM/Virtual Memory Info"," ")
 	#more common elements. The order matters
+	$macInfoHash.Add("RAMAmount", $macInfoRAMSize)
 	$macInfoHash.Add("AppMemoryUsedGB", $macInfoAppMemoryUsedGB)
 	$macInfoHash.Add("VMPageFile", $macInfoVMPageFile)
 	$macInfoHash.Add("VMSwapInUseGB", $macInfoVMSwapUsed)
-	$macInfoHash.Add("         "," ")
+	$macInfoHash.Add("      "," ")
+	$macInfoHash.Add("Boot/FileVault/SIP Information"," ")
 	$macInfoHash.Add("BootDevice", $macInfoBootDevice)
 	$macInfoHash.Add("FileVaultStatus", $macInfoFileVaultStatus)
 	$macInfoHash.Add("SIPStatus", $csrutilStatus)
-	$macInfoHash.Add("          "," ")
+	$macInfoHash.Add("       "," ")
+	$macInfoHash.Add("Location Information"," ")
 	$macInfoHash.Add("EFICurrentLanguage", $macInfoEFILanguage)
 	$macInfoHash.Add("DSTStatus", $macInfoDSTStatus)
 	$macInfoHash.Add("TimeZone", $macInfoTimeZone)
 	$macInfoHash.Add("UTCOffset", $macInfoUTCOffset)
-	$macInfoHash.Add("           "," ")
+	$macInfoHash.Add("        "," ")
+	$macInfoHash.Add("Network Information"," ")
 	$macInfoHash.Add("DNSHostName", $macInfoDNSHostName)
 	$macInfoHash.Add("LocalHostName", $macInfoLocalHostName)
 	$macInfoHash.Add("NetworkServiceList", $macInfoNICList)
-	$macInfoHash.Add("            "," ")
+	$macInfoHash.Add("         "," ")
+	$macInfoHash.Add("Current User Information"," ")
 	$macInfoHash.Add("CurrentUserName", $macInfoShortUserName)
 	$macInfoHash.Add("CurrentUserUID", $macInfoUID)
-	$macInfoHash.Add("             "," ")
+	$macInfoHash.Add("          "," ")
+	$macInfoHash.Add("Date/Time Information"," ")
 	$macInfoHash.Add("CurrentDateTime", $macInfoCurrentDate)
 	$macInfoHash.Add("LastBootDateTime", $macInfoLastBoot)
-	$macInfoHash.Add("Uptime", $macInfoUptime)
-	$macInfoHash.Add("              "," ")
-
+	$macInfoHash.Add("           "," ")
+	$macInfoHash.Add("AC Power Information"," ")
 	##Power Info
 	#AC Power first, that's always there
 	$macInfoHash.Add("ACCurrentPowerSource",$ACCurrentPowerSource)
@@ -999,10 +1004,8 @@ function Get-MacInfo {
 		$macInfoHash.Add("ACWakeOnACChange",$ACWakeOnACCHange)
 		$macInfoHash.Add("ACWakeOnClamshellOpen",$ACWakeOnClamshellOpen)
 	}
-	#add a blank line to make reading easier
-	$macInfoHash.Add("               "," ")
-
-	#put in the AC Charger info here, there's some logic to it
+	$macInfoHash.Add("            "," ")
+	$macInfoHash.Add("AC Charger Information"," ")
 	$macInfoHash.Add("ACChargerConnected",$ACChargerConnected)
 	$macInfoHash.Add("ACChargerCharging",$ACChargerCharging)
 	#the rest of this is variable AF, and there's not a great way to test for it other
@@ -1015,8 +1018,8 @@ function Get-MacInfo {
 	$macInfoHash.Add("ACChargerHWVers",$ACChargerHWVers)
 	$macInfoHash.Add("ACChargerFirmwareVers",$ACChargerFirmwareVers)
 	$macInfoHash.Add("ACChargerFamily",$ACChargerFamily)
-	$macInfoHash.Add("                "," ")
-
+	$macInfoHash.Add("             "," ")
+	$macInfoHash.Add("Battery Settings Information"," ")
 	#if we have a battery, add that
 	if ($hasBattery) {
 		$macInfoHash.Add("batteryCurrentPowerSource",$batteryCurrentPowerSource)
@@ -1038,9 +1041,8 @@ function Get-MacInfo {
 			$macInfoHash.Add("batteryWakeOnACChange",$batteryWakeOnACChange)
 			$macInfoHash.Add("batteryWakeOnClamshellOpen",$batteryWakeOnClamshellOpen)
 		}
-		#more white space
-		$macInfoHash.Add("                 "," ")
-
+		$macInfoHash.Add("              "," ")
+		$macInfoHash.Add("Battery Charge Information"," ")
 		$macInfoHash.Add("batteryWarningLevel",$batteryWarningLevel)
 		$macInfoHash.Add("batteryFullyCharged",$batteryFullyCharged)
 		$macInfoHash.Add("batteryIsCharging",$batteryIsCharging)
@@ -1048,15 +1050,15 @@ function Get-MacInfo {
 		if (!($isAppleSilicon)) {
 			$macInfoHash.Add("batteryMaxChargeCapacity",$batteryMaxChargeCapacity) #intel only
 		}
-		$macInfoHash.Add("                  "," ")
-
+		$macInfoHash.Add("               "," ")
+		$macInfoHash.Add("Battery Health Information"," ")
 		$macInfoHash.Add("batteryCycleCount",$batteryCycleCount)
 		$macInfoHash.Add("batteryHealth",$batteryHealth)
 		if ($isAppleSilicon) {
 			$macInfoHash.Add("batteryHealthMaxCapacity",$batteryHealthMaxCapacity) #apple silicon only
 		}
-		$macInfoHash.Add("                   "," ")
-
+		$macInfoHash.Add("                "," ")
+		$macInfoHash.Add("Battery Hardware Information"," ")
 		$macInfoHash.Add("batterySerialNumber",$batterySerialNumber)
 		$macInfoHash.Add("batteryDeviceName",$batteryDeviceName)
 		$macInfoHash.Add("batteryFirmwareVersion",$batteryFirmwareVersion)
@@ -1065,11 +1067,10 @@ function Get-MacInfo {
 		if (!($isAppleSilicon)) {
 			$macInfoHash.Add("batteryManufacturer",$batteryManufacturer) #intel Only
 		}
-		$macInfoHash.Add("                    "," ")
 	}
 
-	#if we have a UPS, add that
-	#note we add the hardware config regardless, this is just for the UPS-specific info
+	$macInfoHash.Add("UPS Information"," ")
+
 	$macInfoHash.Add("UPSInstalled",$UPSInstalled)
 	$macInfoHash.Add("                     "," ")
 	if ($hasUPS) {
@@ -1083,9 +1084,9 @@ function Get-MacInfo {
 		if ($isAppleSilicon) {
 			$macInfoHash.Add("UPSSleepOnPowerButton",$UPSSleepOnPowerButton) #apple silicon only
 		}
-		$macInfoHash.Add("                      "," ")
 	}
-
+	
+	$macInfoHash.Add("IBridge Information"," ")
 	#ibridge additions
 	$macInfoHash.Add("iBridgeBootUUID",$iBridgeBootUUID)
 	$macInfoHash.Add("iBridgeFWVersion",$iBridgeBuild)
@@ -1103,9 +1104,12 @@ function Get-MacInfo {
 		$macInfoHash.Add("iBridgeSSVStatus",$iBridgeSBSSV)
 		$macInfoHash.Add("iBridgeSecureBootLvl",$iBridgeSecureBoot)
 	}
-	$macInfoHash.Add("                       "," ")
+	$macInfoHash.Add("                  "," ")
+	$macInfoHash.Add("Miscellaneous Information"," ")
 	$macInfoHash.Add("AudioDevices",$audioDeviceNameList)
-	$macInfoHash.Add("                        "," ")
+	$macInfoHash.Add("Uptime", $macInfoUptime)
+	$macInfoHash.Add("ActivationLockStatus", $macInfoActivationLockStatus)
+	$macInfoHash.Add("                   "," ")
 
 	#so we want the hashtable to be filled before we even care about what the person asked for. This is lazy as hell, to be sure, but,
 	#it ensures that no matter what the parameter asks for, it will work. Also really, the entire thing takes just over a second to run,
@@ -1120,28 +1124,49 @@ function Get-MacInfo {
 
 	#I did try to use -format table, but it didn't work out
 
-	if ($null -eq $keys) {
-		$macInfoHash
-		Exit-PSSession
-	}
-	else {
-		"{0,-30}{1,-100}" -f "Name","Value"
-		"{0,-30}{1,-100}" -f "----","-----"
-		foreach ($key in $keys) {
-		     $theValue = $macInfoHash.$key
-		     "{0,-30}{1,-100}" -f $key,$theValue
+	#this checks to see if the outputType param is null (if it's not used, it's null), then checks to see if the parameter
+	#is some form of "json". If it is, you get the json output, otherwise, you get the "regular" output
+	if ($null -ne $outputType) {
+		$outputType = $outputType.ToLower()
+		if ($outputType -eq "json") {
+			buildJsonOutput -macInfoList $macInfoHash
+		} else {
+			if ($null -eq $keys) {
+				$macInfoHash
+				Exit-PSSession
+			} else {
+				"{0,-30}{1,-100}" -f "Name","Value"
+				"{0,-30}{1,-100}" -f "----","-----"
+				foreach ($key in $keys) {
+					$theValue = $macInfoHash.$key
+					"{0,-30}{1,-100}" -f $key,$theValue
+				}
+			}
+		}
+	} else {
+		if ($null -eq $keys) {
+			$macInfoHash
+			Exit-PSSession
+		} else {
+			"{0,-30}{1,-100}" -f "Name","Value"
+			"{0,-30}{1,-100}" -f "----","-----"
+			foreach ($key in $keys) {
+				$theValue = $macInfoHash.$key
+				"{0,-30}{1,-100}" -f $key,$theValue
+			}
 		}
 	}
+
+	
 }
 
 Export-ModuleMember -Function Get-MacInfo
 
-
 # SIG # Begin signature block
 # MIIMgQYJKoZIhvcNAQcCoIIMcjCCDG4CAQMxDTALBglghkgBZQMEAgEwewYKKwYB
 # BAGCNwIBBKBtBGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC8v2BSnVIVL1kh
-# WzKqgzPJ1gpIVulwCCmsUuanaGPqsaCCCawwggQEMIIC7KADAgECAggYeqmowpYh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDziU0mZybiXBKw
+# 4Vjo0mUliFHXQW0OqJH4nY8En2Y2CaCCCawwggQEMIIC7KADAgECAggYeqmowpYh
 # DDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzETMBEGA1UEChMKQXBwbGUg
 # SW5jLjEmMCQGA1UECxMdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxFjAU
 # BgNVBAMTDUFwcGxlIFJvb3QgQ0EwHhcNMTIwMjAxMjIxMjE1WhcNMjcwMjAxMjIx
@@ -1198,11 +1223,11 @@ Export-ModuleMember -Function Get-MacInfo
 # aW9uIEF1dGhvcml0eTETMBEGA1UECgwKQXBwbGUgSW5jLjELMAkGA1UEBhMCVVMC
 # CDj+3VBykqv0MAsGCWCGSAFlAwQCAaB8MBAGCisGAQQBgjcCAQwxAjAAMBkGCSqG
 # SIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3
-# AgEVMC8GCSqGSIb3DQEJBDEiBCC9GEv7EedpBeWcoFQWMZ4rj0GskhZ0Z3qGd1Ev
-# SFFQxzALBgkqhkiG9w0BAQEEggEAirarsERVhs/jWrFTO2evHgctY2WuM2mJ2oRe
-# 02zn1PPxyZry4gVncEl34/p0mEYIHhbJU3gsyKOG+w3DS5uyGowSQRq0u19Wz0Dv
-# IZRP8ILzvWZTzkSHDo25K/ZxCnOV58rBKNSS123KIR3Q1qFK8akRYcXHgsx1NCDt
-# gSBt6/r176c8sJwmu7wfZulNQv4XhOo4lH+kRwQNr09WOOTh2qJHUyUlWNw+H+HI
-# wcwZfDlzsg7U2CZPJ+y6Vz0eubCpG8PJiu0OoqH0+fgWDTfMYpch07tmMrv+zhh1
-# k6y6h/2QsbOpv9rq+QWwrK6ftOrDqgvhshH2eSQ7Rt7fff7Hlg==
+# AgEVMC8GCSqGSIb3DQEJBDEiBCCIAvUTkWGgRT/98vNhWWAYMbTMUBsTl3raDRRa
+# 6/bpUDALBgkqhkiG9w0BAQEEggEAkiw3pCYWMqaWjwuzPUv2NB+V2cCT+N6CH2se
+# ClZ9mnn11OwBlkaIzxQ6D3oeyEAMjuReNot6DVU79NHGHd454Iy9PnI9CJO02oGi
+# jOLjE5kPnA7qf+Qd5bT5ENcb4TC34Oqtam/ecUYyv9XjdLUb+4qFGtObQZMSI/MI
+# qqqZOUMHDfnYpeKyppxHL/UwKvpzN3x6a7LfTqKXg9cTK+1518g5LJahQDV5Pbow
+# OxRn27Pc66cP7ssQz7xSSHtzdPhRxRksO1P2A4E9Vfv9ZnyCCWUOT0G5u2xHCBr/
+# PuVYn8/yGrFr4D2utVXvE0XQH0Yc/jqMyRL8aetM9ZSX/Rzk6Q==
 # SIG # End signature block
