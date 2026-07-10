@@ -142,31 +142,8 @@ CurrentUserUID
 CurrentDateTime  
 LastBootDateTime  
 Uptime  
+AudioDevices  
 
-obviously, this list is expandable.
-
-20 May 2020 update added - Comment-based help (it's a bit odd, but it gives you an idea of what's going on) The ability to get one, some, or all the key/value pairs as a result Set up the hashtable as an ordered hashtable, so the output order for the full result makes a bit more sense in terms of grouping
-
-20 May 2020 update
-added - 
-  Comment-based help (it's a bit odd, but it gives you an idea of what's going on)
-  The ability to get one, some, or all the key/value pairs as a result
-  Set up the hashtable as an ordered hashtable, so the output order for the full result makes a bit more sense in terms of grouping
+obviously, this list is expandable.  
   
-27 May 2020 update
-IT'S ALIVE! IT WORKS AS A MODULE! 
-
-7 Mar 2022 update
-Edits to account for changes to system profiler output. Added Hyperthreading status, provisioningudid, activation lock status, renamed EFI to SystemFirmwareVersion and SMC to OSLoaderVersion
-
-1 Oct 2022 update
-Added first attempt at Apple Silicon
-
-20 July 2023 update
-Added SIP status
-
-13 July Update
-	added many things, apple pay, bluetooth, post test, formatted the output a bit better, it now works correctly for Apple Silicon...so many updates. There's also now a CHANGELOG file.  
-  
-2 Feb. 2025 update  
-	MASSIVE update. Read the CHANGELOG for details  
+moved change list into changelog file
