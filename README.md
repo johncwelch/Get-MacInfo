@@ -4,6 +4,8 @@ There are things that are in Get-Computerinfo that are not here, some because th
 
 This is pretty thoroughly commented, so if you read those, you should have a good idea of what is going on.
 
+Default output is as an ordered dictionary. -outputType json dumps it out as json
+
 20221001 Added support for differences between Apple Silicon and Intel
 
 This is pulling data from uname, sw_ver, system_profiler, osascript, sysctl, and a number of built-in powershell functions. Currently, the keys it has are:
